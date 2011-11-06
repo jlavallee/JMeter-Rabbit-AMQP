@@ -2,7 +2,6 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
 
-import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
@@ -26,32 +25,19 @@ import com.rabbitmq.client.MessageProperties;
  *
  * However, access to class fields must be synchronized.
  */
-public class AMQPPublisher extends AbstractSampler implements Interruptible {
+public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     private static final long serialVersionUID = 240L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
-    //++ These are JMX names, and must not be changed
-    private static final String EXCHANGE = "AMQPSampler.Exchange"; // $NON-NLS-1$
-    private static final String QUEUE = "AMQPSampler.Queue"; // $NON-NLS-1$
-    private static final String ROUTING_KEY = "AMQPSampler.RoutingKey"; // $NON-NLS-1$
-    private static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost"; // $NON-NLS-1$
-    private static final String HOST = "AMQPSampler.Host"; // $NON-NLS-1$
-    private static final String PORT = "AMQPSampler.Port"; // $NON-NLS-1$
-    private static final String USERNAME = "AMQPSampler.Username"; // $NON-NLS-1$
-    private static final String PASSWORD = "AMQPSampler.Password"; // $NON-NLS-1$
     private static final String TIMEOUT = "AMQPSampler.timeout"; // $NON-NLS-1$
 
     private final static String MESSAGE = "AMQPSampler.message"; //$NON-NLS-1$
 
 
-
     private static final int DEFAULT_TIMEOUT = 1000;
     public static final String DEFAULT_TIMEOUT_STRING = Integer.toString(DEFAULT_TIMEOUT);
-
-    private static final int DEFAULT_PORT = 5672;
-    public static final String DEFAULT_PORT_STRING = Integer.toString(DEFAULT_PORT);
 
 
     private transient ConnectionFactory factory;
@@ -60,7 +46,6 @@ public class AMQPPublisher extends AbstractSampler implements Interruptible {
 
 
     public AMQPPublisher() {
-        trace("AMQPSampler()");
         factory = new ConnectionFactory();
     }
 
@@ -68,7 +53,6 @@ public class AMQPPublisher extends AbstractSampler implements Interruptible {
      * {@inheritDoc}
      */
     public SampleResult sample(Entry e) {
-        trace("sample()");
         SampleResult result = new SampleResult();
         result.setSampleLabel(getName());
         result.setSuccessful(false);
@@ -195,84 +179,6 @@ public class AMQPPublisher extends AbstractSampler implements Interruptible {
         setProperty(MESSAGE, content);
     }
 
-    public String getExchange() {
-        return getPropertyAsString(EXCHANGE);
-    }
-
-    public void setExchange(String name) {
-        setProperty(EXCHANGE, name);
-    }
-
-
-    public String getQueue() {
-        return getPropertyAsString(QUEUE);
-    }
-
-    public void setQueue(String name) {
-        setProperty(QUEUE, name);
-    }
-
-
-    public String getRoutingKey() {
-        return getPropertyAsString(ROUTING_KEY);
-    }
-
-    public void setRoutingKey(String name) {
-        setProperty(ROUTING_KEY, name);
-    }
-
-
-    public String getVirtualHost() {
-        return getPropertyAsString(VIRUTAL_HOST);
-    }
-
-    public void setVirtualHost(String name) {
-        setProperty(VIRUTAL_HOST, name);
-    }
-
-
-    public String getHost() {
-        return getPropertyAsString(HOST);
-    }
-
-    public void setHost(String name) {
-        setProperty(HOST, name);
-    }
-
-
-    public String getPort() {
-        return getPropertyAsString(PORT);
-    }
-
-    public void setPort(String name) {
-        setProperty(PORT, name);
-    }
-
-    private int getPortAsInt() {
-        if (getPropertyAsInt(PORT) < 1) {
-            return DEFAULT_PORT;
-        }
-        return getPropertyAsInt(PORT);
-    }
-
-
-
-    public String getUsername() {
-        return getPropertyAsString(USERNAME);
-    }
-
-    public void setUsername(String name) {
-        setProperty(USERNAME, name);
-    }
-
-
-    public String getPassword() {
-        return getPropertyAsString(PASSWORD);
-    }
-
-    public void setPassword(String name) {
-        setProperty(PASSWORD, name);
-    }
 
     private int getTimeoutAsInt() {
         if (getPropertyAsInt(TIMEOUT) < 1) {
@@ -288,15 +194,6 @@ public class AMQPPublisher extends AbstractSampler implements Interruptible {
 
     public void setTimeout(String s) {
         setProperty(TIMEOUT, s);
-    }
-
-    /*
-     * Helper method
-     */
-    private void trace(String s) {
-        String tl = getTitle();
-        String tn = Thread.currentThread().getName();
-        String th = this.toString();
     }
 
     @Override
