@@ -14,7 +14,7 @@ import com.zeroclue.jmeter.protocol.amqp.AMQPSampler;
 public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
     private static final long serialVersionUID = 1L;
-    
+
     protected JLabeledTextField exchange = new JLabeledTextField("Exchange"); //$NON-NLS-1$
     protected JLabeledTextField queue = new JLabeledTextField("Queue"); //$NON-NLS-1$
     protected JLabeledTextField routingKey = new JLabeledTextField("Routing Key"); //$NON-NLS-1$
@@ -24,9 +24,9 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField timeout = new JLabeledTextField("Timeout"); //$NON-NLS-1$
     protected JLabeledTextField username = new JLabeledTextField("Username"); //$NON-NLS-1$
     protected JLabeledTextField password = new JLabeledTextField("Password"); //$NON-NLS-1$
-    
+
     protected abstract void setMainPanel(JPanel panel);
-    
+
     /**
      * {@inheritDoc}
      */
@@ -60,7 +60,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         host.setText("localhost");
         port.setText(AMQPSampler.DEFAULT_PORT_STRING);
         timeout.setText(AMQPSampler.DEFAULT_TIMEOUT_STRING);
-        
+
         username.setText("guest");
         password.setText("guest");
     }
@@ -87,7 +87,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     }
 
     protected void init() {
-        
+
         // Standard setup
         setLayout(new BorderLayout(0, 5));
         setBorder(makeBorder());
@@ -96,7 +96,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         // Specific setup
         JPanel mainPanel = new VerticalPanel();
         add(mainPanel, BorderLayout.CENTER);
-        
+
         mainPanel.add(exchange);
         mainPanel.add(queue);
         mainPanel.add(routingKey);
@@ -105,8 +105,9 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         mainPanel.add(port);
         mainPanel.add(username);
         mainPanel.add(password);
-        
+        mainPanel.add(timeout);
+
         setMainPanel(mainPanel);
     }
-    
+
 }

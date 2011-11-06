@@ -3,8 +3,6 @@ package com.zeroclue.jmeter.protocol.amqp;
 import java.io.IOException;
 
 import org.apache.jmeter.samplers.AbstractSampler;
-import org.apache.jmeter.samplers.Entry;
-import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
@@ -26,8 +24,7 @@ public abstract class AMQPSampler extends AbstractSampler {
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
-    private static final String TIMEOUT = "AMQPSampler.timeout"; // $NON-NLS-1$
- 
+
     //++ These are JMX names, and must not be changed
     protected static final String EXCHANGE = "AMQPSampler.Exchange"; // $NON-NLS-1$
     protected static final String QUEUE = "AMQPSampler.Queue"; // $NON-NLS-1$
@@ -37,14 +34,15 @@ public abstract class AMQPSampler extends AbstractSampler {
     protected static final String PORT = "AMQPSampler.Port"; // $NON-NLS-1$
     protected static final String USERNAME = "AMQPSampler.Username"; // $NON-NLS-1$
     protected static final String PASSWORD = "AMQPSampler.Password"; // $NON-NLS-1$
- 
+    private static final String TIMEOUT = "AMQPSampler.Timeout"; // $NON-NLS-1$
+
     private transient ConnectionFactory factory;
     private transient Connection connection;
-    
+
     protected AMQPSampler(){
         factory = new ConnectionFactory();
     }
-    
+
     protected void initChannel() throws IOException {
         Channel channel = getChannel();
         if(channel != null && channel.isOpen()){
@@ -110,7 +108,7 @@ public abstract class AMQPSampler extends AbstractSampler {
      * @see junit.framework.TestListener#endTest(junit.framework.Test)
      */
     public void testEnded() {
-        log.debug("PublisherSampler.testEnded called");
+        log.debug("AMQPSampler.testEnded called");
         try {
             getChannel().close();
             connection.close();
@@ -118,7 +116,7 @@ public abstract class AMQPSampler extends AbstractSampler {
             log.error("Failed to close channel or connection", e);
         }
     }
-    
+
     private int getTimeoutAsInt() {
         if (getPropertyAsInt(TIMEOUT) < 1) {
             return DEFAULT_TIMEOUT;

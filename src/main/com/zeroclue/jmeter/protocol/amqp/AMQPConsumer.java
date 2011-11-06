@@ -14,11 +14,14 @@ import com.rabbitmq.client.GetResponse;
 public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
     private static final long serialVersionUID = 1L;
- 
+
     private static final Logger log = LoggingManager.getLoggerForClass();
- 
+
+    //++ These are JMX names, and must not be changed
+    private final static String PURGE_QUEUE = "AMQPConsumer.purgeQueue"; //$NON-NLS-1$
+
     private transient Channel channel;
-    
+
     /**
      * {@inheritDoc}
      */
@@ -44,7 +47,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
         try {
             // TODO: perhaps we should start a real consumer?
             GetResponse resp = channel.basicGet(getQueue(), true);
-            
+
             /*
              * Set up the sample result details
              */
@@ -65,11 +68,25 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
         return result;
     }
- 
+
     @Override
     public boolean interrupt() {
         testEnded();
         return true;
+    }
+    /**
+     * {@inheritDoc}
+     */
+    public void testEnded() {
+        if(purgeQueue()){
+            log.info("Purging queue " + getQueue());
+            try {
+                channel.queuePurge(getQueue());
+            } catch (IOException e) {
+                log.error("Failed to purge queue " + getQueue(), e);
+            }
+        }
+        super.testEnded();
     }
 
     @Override
@@ -80,5 +97,24 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
     @Override
     protected void setChannel(Channel channel) {
         this.channel = channel;
+    }
+
+    /**
+     * @return the whether or not to purge the queue
+     */
+    public String getPurgeQueue() {
+        return getPropertyAsString(PURGE_QUEUE);
+    }
+
+    public void setPurgeQueue(String content) {
+        setProperty(PURGE_QUEUE, content);
+    }
+
+    public void setPurgeQueue(Boolean purgeQueue) {
+        setProperty(PURGE_QUEUE, purgeQueue.toString());
+    }
+
+    public boolean purgeQueue(){
+        return Boolean.parseBoolean(getPurgeQueue());
     }
 }

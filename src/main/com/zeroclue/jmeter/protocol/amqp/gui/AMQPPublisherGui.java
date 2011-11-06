@@ -6,7 +6,6 @@ import javax.swing.JPanel;
 
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.gui.JLabeledTextArea;
-import org.apache.jorphan.gui.JLabeledTextField;
 
 import com.zeroclue.jmeter.protocol.amqp.AMQPPublisher;
 
@@ -23,7 +22,7 @@ import com.zeroclue.jmeter.protocol.amqp.AMQPPublisher;
 public class AMQPPublisherGui extends AMQPSamplerGui {
 
     private static final long serialVersionUID = 1L;
-    
+
     private JPanel mainPanel;
 
     /*
@@ -33,7 +32,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     */
     private JLabeledTextArea message = new JLabeledTextArea("Message Content"); //$NON-NLS-1$
 
-    public AMQPPublisherGui() {
+    public AMQPPublisherGui(){
         init();
     }
 
@@ -75,16 +74,17 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void modifyTestElement(TestElement te) {
         AMQPPublisher sampler = (AMQPPublisher) te;
         sampler.clear();
         configureTestElement(sampler);
-        
+
         super.modifyTestElement(sampler);
 
         sampler.setMessage(message.getText());
     }
-    
+
     @Override
     protected void setMainPanel(JPanel panel){
         mainPanel = panel;
@@ -101,7 +101,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         mainPanel.add(configChoice);
         mainPanel.add(messageFile);
         */
-        mainPanel.add(timeout);
         mainPanel.add(message);
         Dimension pref = new Dimension(400, 150);
         message.setPreferredSize(pref);
