@@ -1,16 +1,14 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
-import org.apache.log.Logger;
 
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
 
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.GetResponse;
 import com.rabbitmq.client.QueueingConsumer;
 
 public class AMQPConsumer extends AMQPSampler implements Interruptible {
@@ -20,7 +18,8 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     //++ These are JMX names, and must not be changed
-    private final static String PURGE_QUEUE = "AMQPConsumer.purgeQueue"; //$NON-NLS-1$
+    private final static String PURGE_QUEUE = "AMQPConsumer.PurgeQueue"; //$NON-NLS-1$
+    private final static String AUTO_ACK = "AMQPConsumer.AutoAck"; //$NON-NLS-1$
 
     private transient Channel channel;
     private transient QueueingConsumer consumer;
@@ -28,8 +27,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
     protected boolean initChannel() throws IOException {
         if(super.initChannel()){
             consumer = new QueueingConsumer(channel);
-            // TODO allow setting autoAck
-            channel.basicConsume(getQueue(), false, consumer);
+            channel.basicConsume(getQueue(), autoAck(), consumer);
             return true;
         }
         return false;
@@ -59,7 +57,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
         result.sampleStart(); // Start timing
         try {
             //GetResponse resp = channel.basicGet(getQueue(), true);
-
+            // TODO: do we want a seperate timeout from the connection timeout?
             QueueingConsumer.Delivery delivery = consumer.nextDelivery(getTimeoutAsInt());
 
             /*
@@ -75,8 +73,9 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
             result.setResponseMessage("OK");// $NON-NLS-1$
             result.setSuccessful(true);
 
-            // process delivery
-            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            if(!autoAck())
+                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+
         } catch (Exception ex) {
             log.debug("", ex);
             result.setResponseCode("000");// $NON-NLS-1$
@@ -135,5 +134,24 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
     public boolean purgeQueue(){
         return Boolean.parseBoolean(getPurgeQueue());
+    }
+
+    /**
+     * @return the whether or not to auto ack
+     */
+    public String getAutoAck() {
+        return getPropertyAsString(AUTO_ACK);
+    }
+
+    public void setAutoAck(String content) {
+        setProperty(AUTO_ACK, content);
+    }
+
+    public void setAutoAck(Boolean AutoAck) {
+        setProperty(AUTO_ACK, AutoAck.toString());
+    }
+
+    public boolean autoAck(){
+        return Boolean.parseBoolean(getAutoAck());
     }
 }

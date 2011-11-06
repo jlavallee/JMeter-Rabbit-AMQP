@@ -13,6 +13,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     private static final long serialVersionUID = 1L;
 
     private final JCheckBox purgeQueue = new JCheckBox("Purge Queue", false); //$NON-NLS-1$
+    private final JCheckBox autoAck = new JCheckBox("Auto ACK", true); //$NON-NLS-1$
 
     private JPanel mainPanel;
 
@@ -27,6 +28,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
         super.init();
 
         mainPanel.add(purgeQueue);
+        mainPanel.add(autoAck);
     }
 
     @Override
@@ -56,6 +58,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
         super.modifyTestElement(sampler);
 
         sampler.setPurgeQueue(purgeQueue.isSelected());
+        sampler.setAutoAck(autoAck.isSelected());
     }
 
     /**

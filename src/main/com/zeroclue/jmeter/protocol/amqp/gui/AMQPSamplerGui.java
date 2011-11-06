@@ -24,6 +24,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField routingKey = new JLabeledTextField("Routing Key"); //$NON-NLS-1$
     protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host"); //$NON-NLS-1$
     protected JLabeledTextField messageTTL = new JLabeledTextField("Message TTL"); //$NON-NLS-1$
+
     protected JLabeledTextField host = new JLabeledTextField("Host"); //$NON-NLS-1$
     protected JLabeledTextField port = new JLabeledTextField("Port"); //$NON-NLS-1$
     protected JLabeledTextField timeout = new JLabeledTextField("Timeout"); //$NON-NLS-1$
