@@ -1,7 +1,11 @@
 package com.zeroclue.jmeter.protocol.amqp.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
 import org.apache.jmeter.gui.util.VerticalPanel;
@@ -87,27 +91,96 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     }
 
     protected void init() {
-
-        // Standard setup
         setLayout(new BorderLayout(0, 5));
         setBorder(makeBorder());
         add(makeTitlePanel(), BorderLayout.NORTH); // Add the standard title
 
-        // Specific setup
         JPanel mainPanel = new VerticalPanel();
-        add(mainPanel, BorderLayout.CENTER);
 
-        mainPanel.add(exchange);
-        mainPanel.add(queue);
-        mainPanel.add(routingKey);
-        mainPanel.add(virtualHost);
-        mainPanel.add(host);
-        mainPanel.add(port);
-        mainPanel.add(username);
-        mainPanel.add(password);
-        mainPanel.add(timeout);
+
+        mainPanel.add(makeCommonPanel());
+
+        add(mainPanel);
 
         setMainPanel(mainPanel);
+    }
+
+    private Component makeCommonPanel() {
+        GridBagConstraints gridBagConstraints, gridBagConstraintsCommon;
+
+        gridBagConstraintsCommon = new GridBagConstraints();
+        gridBagConstraintsCommon.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraintsCommon.anchor = GridBagConstraints.WEST;
+        gridBagConstraintsCommon.weightx = 0.5;
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.fill = GridBagConstraints.NONE;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+
+        JPanel commonPanel = new JPanel(new GridBagLayout());
+
+        JPanel queueSettings = new JPanel(new GridBagLayout());
+        queueSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Queue"));
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        queueSettings.add(exchange, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        queueSettings.add(queue, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        queueSettings.add(routingKey, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        queueSettings.add(virtualHost, gridBagConstraints);
+
+        gridBagConstraintsCommon.gridx = 0;
+        gridBagConstraintsCommon.gridy = 0;
+
+        commonPanel.add(queueSettings, gridBagConstraintsCommon);
+
+        JPanel serverSettings = new JPanel(new GridBagLayout());
+        serverSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Server"));
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        serverSettings.add(host, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        serverSettings.add(port, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        serverSettings.add(username, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        serverSettings.add(password, gridBagConstraints);
+
+        gridBagConstraintsCommon.gridx = 1;
+        gridBagConstraintsCommon.gridy = 0;
+
+        commonPanel.add(serverSettings, gridBagConstraintsCommon);
+
+        JPanel clientSettings = new JPanel(new GridBagLayout());
+        clientSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Client"));
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        clientSettings.add(timeout, gridBagConstraints);
+
+        gridBagConstraintsCommon.gridx = 0;
+        gridBagConstraintsCommon.gridy = 1;
+
+        commonPanel.add(clientSettings, gridBagConstraintsCommon);
+        return commonPanel;
     }
 
 }
