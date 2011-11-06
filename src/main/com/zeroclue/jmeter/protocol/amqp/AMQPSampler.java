@@ -28,16 +28,16 @@ public abstract class AMQPSampler extends AbstractSampler {
 
 
     //++ These are JMX names, and must not be changed
-    protected static final String EXCHANGE = "AMQPSampler.Exchange"; // $NON-NLS-1$
-    protected static final String QUEUE = "AMQPSampler.Queue"; // $NON-NLS-1$
-    protected static final String ROUTING_KEY = "AMQPSampler.RoutingKey"; // $NON-NLS-1$
-    protected static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost"; // $NON-NLS-1$
-    protected static final String HOST = "AMQPSampler.Host"; // $NON-NLS-1$
-    protected static final String PORT = "AMQPSampler.Port"; // $NON-NLS-1$
-    protected static final String USERNAME = "AMQPSampler.Username"; // $NON-NLS-1$
-    protected static final String PASSWORD = "AMQPSampler.Password"; // $NON-NLS-1$
-    private static final String TIMEOUT = "AMQPSampler.Timeout"; // $NON-NLS-1$
-    private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL"; // $NON-NLS-1$
+    protected static final String EXCHANGE = "AMQPSampler.Exchange";
+    protected static final String QUEUE = "AMQPSampler.Queue";
+    protected static final String ROUTING_KEY = "AMQPSampler.RoutingKey";
+    protected static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost";
+    protected static final String HOST = "AMQPSampler.Host";
+    protected static final String PORT = "AMQPSampler.Port";
+    protected static final String USERNAME = "AMQPSampler.Username";
+    protected static final String PASSWORD = "AMQPSampler.Password";
+    private static final String TIMEOUT = "AMQPSampler.Timeout";
+    private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
 
     private transient ConnectionFactory factory;
     private transient Connection connection;

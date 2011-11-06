@@ -27,10 +27,10 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
 
     /*
     private static final String[] CONFIG_CHOICES = {"File", "Static"};
-    private final JLabeledRadio configChoice = new JLabeledRadio("Message Source", CONFIG_CHOICES); //$NON-NLS-1$
-    private final FilePanel messageFile = new FilePanel("Filename", ALL_FILES); //$NON-NLS-1$
+    private final JLabeledRadio configChoice = new JLabeledRadio("Message Source", CONFIG_CHOICES);
+    private final FilePanel messageFile = new FilePanel("Filename", ALL_FILES);
     */
-    private JLabeledTextArea message = new JLabeledTextArea("Message Content"); //$NON-NLS-1$
+    private JLabeledTextArea message = new JLabeledTextArea("Message Content");
 
     public AMQPPublisherGui(){
         init();
@@ -113,6 +113,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     public void clearGui() {
         super.clearGui();
         //messageFile.setFilename("");
-        message.setText(""); // $NON-NLS-1$
+        message.setText("");
     }
 }

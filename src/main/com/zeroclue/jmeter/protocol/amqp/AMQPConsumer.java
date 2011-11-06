@@ -18,8 +18,8 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     //++ These are JMX names, and must not be changed
-    private final static String PURGE_QUEUE = "AMQPConsumer.PurgeQueue"; //$NON-NLS-1$
-    private final static String AUTO_ACK = "AMQPConsumer.AutoAck"; //$NON-NLS-1$
+    private final static String PURGE_QUEUE = "AMQPConsumer.PurgeQueue";
+    private final static String AUTO_ACK = "AMQPConsumer.AutoAck";
 
     private transient Channel channel;
     private transient QueueingConsumer consumer;
@@ -70,7 +70,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
             result.setDataType(SampleResult.TEXT);
 
             result.setResponseCodeOK();
-            result.setResponseMessage("OK");// $NON-NLS-1$
+            result.setResponseMessage("OK");
             result.setSuccessful(true);
 
             if(!autoAck())
@@ -78,7 +78,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
         } catch (Exception ex) {
             log.debug("", ex);
-            result.setResponseCode("000");// $NON-NLS-1$
+            result.setResponseCode("000");
             result.setResponseMessage(ex.toString());
         }
 

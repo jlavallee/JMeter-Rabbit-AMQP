@@ -27,7 +27,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     //++ These are JMX names, and must not be changed
-    private final static String MESSAGE = "AMQPPublisher.message"; //$NON-NLS-1$
+    private final static String MESSAGE = "AMQPPublisher.message";
 
     private transient Channel channel;
 
@@ -69,11 +69,11 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             result.setDataType(SampleResult.TEXT);
 
             result.setResponseCodeOK();
-            result.setResponseMessage("OK");// $NON-NLS-1$
+            result.setResponseMessage("OK");
             result.setSuccessful(true);
         } catch (Exception ex) {
             log.debug("", ex);
-            result.setResponseCode("000");// $NON-NLS-1$
+            result.setResponseCode("000");
             result.setResponseMessage(ex.toString());
         }
 

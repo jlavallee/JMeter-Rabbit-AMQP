@@ -19,17 +19,17 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
     private static final long serialVersionUID = 1L;
 
-    protected JLabeledTextField exchange = new JLabeledTextField("Exchange"); //$NON-NLS-1$
-    protected JLabeledTextField queue = new JLabeledTextField("Queue"); //$NON-NLS-1$
-    protected JLabeledTextField routingKey = new JLabeledTextField("Routing Key"); //$NON-NLS-1$
-    protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host"); //$NON-NLS-1$
-    protected JLabeledTextField messageTTL = new JLabeledTextField("Message TTL"); //$NON-NLS-1$
+    protected JLabeledTextField exchange = new JLabeledTextField("Exchange");
+    protected JLabeledTextField queue = new JLabeledTextField("Queue");
+    protected JLabeledTextField routingKey = new JLabeledTextField("Routing Key");
+    protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host");
+    protected JLabeledTextField messageTTL = new JLabeledTextField("Message TTL");
 
-    protected JLabeledTextField host = new JLabeledTextField("Host"); //$NON-NLS-1$
-    protected JLabeledTextField port = new JLabeledTextField("Port"); //$NON-NLS-1$
-    protected JLabeledTextField timeout = new JLabeledTextField("Timeout"); //$NON-NLS-1$
-    protected JLabeledTextField username = new JLabeledTextField("Username"); //$NON-NLS-1$
-    protected JLabeledTextField password = new JLabeledTextField("Password"); //$NON-NLS-1$
+    protected JLabeledTextField host = new JLabeledTextField("Host");
+    protected JLabeledTextField port = new JLabeledTextField("Port");
+    protected JLabeledTextField timeout = new JLabeledTextField("Timeout");
+    protected JLabeledTextField username = new JLabeledTextField("Username");
+    protected JLabeledTextField password = new JLabeledTextField("Password");
 
     protected abstract void setMainPanel(JPanel panel);
 
