@@ -1,0 +1,7 @@
+.classpath
+.project
+.settings/
+*\.sw[po]
+.DS_Store
+stats/
+target/
