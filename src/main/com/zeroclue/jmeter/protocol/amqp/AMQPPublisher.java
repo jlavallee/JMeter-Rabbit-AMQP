@@ -4,13 +4,17 @@ import java.io.IOException;
 
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
+import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
 
 /**
  * JMeter creates an instance of a sampler class for every occurrence of the
@@ -22,15 +26,13 @@ import com.rabbitmq.client.ConnectionFactory;
  *
  * However, access to class fields must be synchronized.
  */
-public class AMQPPublisher extends AbstractSampler {
+public class AMQPPublisher extends AbstractSampler implements Interruptible {
 
     private static final long serialVersionUID = 240L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     //++ These are JMX names, and must not be changed
-    
-    
     private static final String EXCHANGE = "AMQPSampler.Exchange"; // $NON-NLS-1$
     private static final String QUEUE = "AMQPSampler.Queue"; // $NON-NLS-1$
     private static final String ROUTING_KEY = "AMQPSampler.RoutingKey"; // $NON-NLS-1$
@@ -40,7 +42,7 @@ public class AMQPPublisher extends AbstractSampler {
     private static final String USERNAME = "AMQPSampler.Username"; // $NON-NLS-1$
     private static final String PASSWORD = "AMQPSampler.Password"; // $NON-NLS-1$
     private static final String TIMEOUT = "AMQPSampler.timeout"; // $NON-NLS-1$
-    
+
     private final static String MESSAGE = "AMQPSampler.message"; //$NON-NLS-1$
 
 
@@ -60,13 +62,6 @@ public class AMQPPublisher extends AbstractSampler {
     public AMQPPublisher() {
         trace("AMQPSampler()");
         factory = new ConnectionFactory();
-        try {
-            connection = factory.newConnection();
-            channel = connection.createChannel();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -74,42 +69,112 @@ public class AMQPPublisher extends AbstractSampler {
      */
     public SampleResult sample(Entry e) {
         trace("sample()");
-        SampleResult res = new SampleResult();
-        boolean isOK = false; // Did sample succeed?
-        String data = getMessage(); // Sampler data
-        String response = null;
+        SampleResult result = new SampleResult();
+        result.setSampleLabel(getName());
+        result.setSuccessful(false);
+        result.setResponseCode("500");
 
-        res.setSampleLabel(getTitle());
+        try {
+            initChannel();
+        } catch (IOException ex) {
+            log.error("Failed to initialize channel", ex);
+            return result;
+        }
+
+        String data = getMessage(); // Sampler data
+
+        result.setSampleLabel(getTitle());
         /*
          * Perform the sampling
          */
-        res.sampleStart(); // Start timing
+        result.sampleStart(); // Start timing
         try {
-
-            // Do something here ...
-
-            response = Thread.currentThread().getName();
-
+            channel.basicPublish(getExchange(), getRoutingKey(), getProperties(), getMessageBytes());
             /*
              * Set up the sample result details
              */
-            res.setSamplerData(data);
-            res.setResponseData(response, null);
-            res.setDataType(SampleResult.TEXT);
+            result.setSamplerData(data);
+            result.setResponseData("OK", null);
+            result.setDataType(SampleResult.TEXT);
 
-            res.setResponseCodeOK();
-            res.setResponseMessage("OK");// $NON-NLS-1$
-            isOK = true;
+            result.setResponseCodeOK();
+            result.setResponseMessage("OK");// $NON-NLS-1$
+            result.setSuccessful(true);
         } catch (Exception ex) {
             log.debug("", ex);
-            res.setResponseCode("500");// $NON-NLS-1$
-            res.setResponseMessage(ex.toString());
+            result.setResponseCode("000");// $NON-NLS-1$
+            result.setResponseMessage(ex.toString());
         }
-        res.sampleEnd(); // End timimg
 
-        res.setSuccessful(isOK);
+        result.sampleEnd(); // End timimg
 
-        return res;
+        return result;
+    }
+
+    /**
+     * the implementation calls testEnded() without any parameters.
+     */
+    public void testEnded(String host) {
+        testEnded();
+    }
+
+    /**
+     * endTest cleans up the client
+     *
+     * @see junit.framework.TestListener#endTest(junit.framework.Test)
+     */
+    public void testEnded() {
+        log.debug("PublisherSampler.testEnded called");
+        try {
+            channel.close();
+            connection.close();
+        } catch (IOException e) {
+            log.error("Failed to close channel or connection", e);
+        }
+    }
+
+    private byte[] getMessageBytes() {
+        return getMessage().getBytes();
+    }
+
+    // TODO: make this configurable
+    private BasicProperties getProperties() {
+        AMQP.BasicProperties properties = MessageProperties.PERSISTENT_TEXT_PLAIN;
+        return properties;
+    }
+
+    private void initChannel() throws IOException {
+        if(channel != null && channel.isOpen()){
+            return;
+        }
+        if(channel != null && !channel.isOpen()){
+            log.warn("channel " + channel.getChannelNumber()
+                    + " closed unexpectedly: " + channel.getCloseReason().getLocalizedMessage());
+        }
+        factory.setConnectionTimeout(getTimeoutAsInt());
+        factory.setVirtualHost(getVirtualHost());
+        factory.setHost(getHost());
+        factory.setPort(getPortAsInt());
+        factory.setUsername(getUsername());
+        factory.setPassword(getPassword());
+
+        log.info("RabbitMQ ConnectionFactory using:"
+                +"\n\t virtual host: " + getVirtualHost()
+                +"\n\t host: " + getHost()
+                +"\n\t port: " + getPort()
+                +"\n\t username: " + getUsername()
+                +"\n\t password: " + getPassword()
+                +"\n\t timeout: " + getTimeout()
+                );
+
+        connection = factory.newConnection();
+        channel = connection.createChannel();
+        channel.exchangeDeclare(getExchange(), "direct", true);
+        channel.queueDeclare(getQueue(), true, false, false, null);
+        channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+        if(!channel.isOpen()){
+            log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
+        }
     }
 
     /**
@@ -129,7 +194,7 @@ public class AMQPPublisher extends AbstractSampler {
     public void setMessage(String content) {
         setProperty(MESSAGE, content);
     }
-    
+
     public String getExchange() {
         return getPropertyAsString(EXCHANGE);
     }
@@ -182,7 +247,7 @@ public class AMQPPublisher extends AbstractSampler {
     public void setPort(String name) {
         setProperty(PORT, name);
     }
-    
+
     private int getPortAsInt() {
         if (getPropertyAsInt(PORT) < 1) {
             return DEFAULT_PORT;
@@ -203,6 +268,10 @@ public class AMQPPublisher extends AbstractSampler {
 
     public String getPassword() {
         return getPropertyAsString(PASSWORD);
+    }
+
+    public void setPassword(String name) {
+        setProperty(PASSWORD, name);
     }
 
     private int getTimeoutAsInt() {
@@ -228,5 +297,11 @@ public class AMQPPublisher extends AbstractSampler {
         String tl = getTitle();
         String tn = Thread.currentThread().getName();
         String th = this.toString();
+    }
+
+    @Override
+    public boolean interrupt() {
+        testEnded();
+        return true;
     }
 }

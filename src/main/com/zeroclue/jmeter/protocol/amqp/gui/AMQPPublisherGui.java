@@ -41,11 +41,13 @@ public class AMQPPublisherGui extends AbstractSamplerGui {
     private JLabeledTextField password = new JLabeledTextField("Password"); //$NON-NLS-1$
     private JLabeledTextField timeout = new JLabeledTextField("Timeout"); //$NON-NLS-1$
 
+    /*
     private static final String[] CONFIG_CHOICES = {"File", "Static"};
     private final JLabeledRadio configChoice = new JLabeledRadio("Message Source", CONFIG_CHOICES); //$NON-NLS-1$
     private final FilePanel messageFile = new FilePanel("Filename", ALL_FILES); //$NON-NLS-1$
+    */
     private JLabeledTextArea message = new JLabeledTextArea("Message Content"); //$NON-NLS-1$
-    
+
     public AMQPPublisherGui() {
         init();
     }
@@ -53,10 +55,11 @@ public class AMQPPublisherGui extends AbstractSamplerGui {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getLabelResource() {
         return this.getClass().getSimpleName();
     }
-    
+
     @Override
     public String getStaticLabel() {
         return "AMQP Publisher";
@@ -70,15 +73,18 @@ public class AMQPPublisherGui extends AbstractSamplerGui {
         super.configure(element);
         if (!(element instanceof AMQPPublisher)) return;
         AMQPPublisher sampler = (AMQPPublisher) element;
-        
+
         exchange.setText(sampler.getExchange());
         queue.setText(sampler.getQueue());
         routingKey.setText(sampler.getRoutingKey());
         virtualHost.setText(sampler.getVirtualHost());
-        
         host.setText(sampler.getHost());
         port.setText(sampler.getPort());
         timeout.setText(sampler.getTimeout());
+
+        username.setText(sampler.getUsername());
+        password.setText(sampler.getPassword());
+
         message.setText(sampler.getMessage());
     }
 
@@ -98,7 +104,7 @@ public class AMQPPublisherGui extends AbstractSamplerGui {
         AMQPPublisher sampler = (AMQPPublisher) te;
         sampler.clear();
         configureTestElement(sampler);
-        
+
         sampler.setExchange(exchange.getText());
         sampler.setQueue(queue.getText());
         sampler.setRoutingKey(routingKey.getText());
@@ -106,8 +112,10 @@ public class AMQPPublisherGui extends AbstractSamplerGui {
         sampler.setHost(host.getText());
         sampler.setPort(port.getText());
         sampler.setTimeout(timeout.getText());
-        
-        
+
+        sampler.setUsername(username.getText());
+        sampler.setPassword(password.getText());
+
         sampler.setMessage(message.getText());
     }
 
@@ -123,7 +131,7 @@ public class AMQPPublisherGui extends AbstractSamplerGui {
         // Specific setup
         JPanel mainPanel = new VerticalPanel();
         add(mainPanel, BorderLayout.CENTER);
-        
+
         mainPanel.add(exchange);
         mainPanel.add(queue);
         mainPanel.add(routingKey);
@@ -133,9 +141,11 @@ public class AMQPPublisherGui extends AbstractSamplerGui {
         mainPanel.add(username);
         mainPanel.add(password);
 
+        /*
         configChoice.setLayout(new BoxLayout(configChoice, BoxLayout.X_AXIS));
         mainPanel.add(configChoice);
         mainPanel.add(messageFile);
+        */
         mainPanel.add(message);
         Dimension pref = new Dimension(400, 150);
         message.setPreferredSize(pref);
@@ -150,13 +160,13 @@ public class AMQPPublisherGui extends AbstractSamplerGui {
         exchange.setText("jmeterExchange");
         queue.setText("jmeterQueue");
         routingKey.setText("jmeterRoutingKey");
-        virtualHost.setText("rabbit");
+        virtualHost.setText("/");
         host.setText("localhost");
         port.setText(AMQPPublisher.DEFAULT_PORT_STRING);
         username.setText("guest");
         password.setText("guest");
         timeout.setText(AMQPPublisher.DEFAULT_TIMEOUT_STRING);
-        messageFile.setFilename("");
+        //messageFile.setFilename("");
         message.setText(""); // $NON-NLS-1$
     }
 }
