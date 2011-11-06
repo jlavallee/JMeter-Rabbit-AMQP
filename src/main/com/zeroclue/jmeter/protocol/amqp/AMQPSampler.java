@@ -76,6 +76,15 @@ public abstract class AMQPSampler extends AbstractSampler {
         channel.exchangeDeclare(getExchange(), "direct", true);
         channel.queueDeclare(getQueue(), true, false, false, getQueueArguments());
         channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+
+        log.info("bound to:"
+                +"\n\t queue: " + getQueue()
+                +"\n\t exchange: " + getExchange()
+                +"\n\t routing key: " + getRoutingKey()
+                +"\n\t arguments: " + getQueueArguments()
+                );
+
+
         if(!channel.isOpen()){
             log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
         }
