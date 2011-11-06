@@ -1,15 +1,33 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
+import java.io.IOException;
+
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.samplers.Entry;
-import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
+
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.AMQP.BasicProperties;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
 
 public abstract class AMQPSampler extends AbstractSampler {
 
     public static final int DEFAULT_PORT = 5672;
     public static final String DEFAULT_PORT_STRING = Integer.toString(DEFAULT_PORT);
 
+    private static final int DEFAULT_TIMEOUT = 1000;
+    public static final String DEFAULT_TIMEOUT_STRING = Integer.toString(DEFAULT_TIMEOUT);
+
+
+    private static final Logger log = LoggingManager.getLoggerForClass();
+
+    private static final String TIMEOUT = "AMQPSampler.timeout"; // $NON-NLS-1$
+ 
     //++ These are JMX names, and must not be changed
     protected static final String EXCHANGE = "AMQPSampler.Exchange"; // $NON-NLS-1$
     protected static final String QUEUE = "AMQPSampler.Queue"; // $NON-NLS-1$
@@ -20,6 +38,103 @@ public abstract class AMQPSampler extends AbstractSampler {
     protected static final String USERNAME = "AMQPSampler.Username"; // $NON-NLS-1$
     protected static final String PASSWORD = "AMQPSampler.Password"; // $NON-NLS-1$
  
+    private transient ConnectionFactory factory;
+    private transient Connection connection;
+    
+    protected AMQPSampler(){
+        factory = new ConnectionFactory();
+    }
+    
+    protected void initChannel() throws IOException {
+        Channel channel = getChannel();
+        if(channel != null && channel.isOpen()){
+            return;
+        }
+        if(channel != null && !channel.isOpen()){
+            log.warn("channel " + channel.getChannelNumber()
+                    + " closed unexpectedly: " + channel.getCloseReason().getLocalizedMessage());
+        }
+        factory.setConnectionTimeout(getTimeoutAsInt());
+        factory.setVirtualHost(getVirtualHost());
+        factory.setHost(getHost());
+        factory.setPort(getPortAsInt());
+        factory.setUsername(getUsername());
+        factory.setPassword(getPassword());
+
+        log.info("RabbitMQ ConnectionFactory using:"
+                +"\n\t virtual host: " + getVirtualHost()
+                +"\n\t host: " + getHost()
+                +"\n\t port: " + getPort()
+                +"\n\t username: " + getUsername()
+                +"\n\t password: " + getPassword()
+                +"\n\t timeout: " + getTimeout()
+                );
+
+        connection = factory.newConnection();
+        channel = connection.createChannel();
+        channel.exchangeDeclare(getExchange(), "direct", true);
+        channel.queueDeclare(getQueue(), true, false, false, null);
+        channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+        if(!channel.isOpen()){
+            log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
+        }
+        setChannel(channel);
+    }
+
+    protected abstract Channel getChannel();
+    protected abstract void setChannel(Channel channel);
+
+    // TODO: make this configurable
+    protected BasicProperties getProperties() {
+        AMQP.BasicProperties properties = MessageProperties.PERSISTENT_TEXT_PLAIN;
+        return properties;
+    }
+
+    /**
+     * @return a string for the sampleResult Title
+     */
+    protected String getTitle() {
+        return this.getName();
+    }
+
+    /**
+     * the implementation calls testEnded() without any parameters.
+     */
+    public void testEnded(String host) {
+        testEnded();
+    }
+
+    /**
+     * endTest cleans up the client
+     *
+     * @see junit.framework.TestListener#endTest(junit.framework.Test)
+     */
+    public void testEnded() {
+        log.debug("PublisherSampler.testEnded called");
+        try {
+            getChannel().close();
+            connection.close();
+        } catch (IOException e) {
+            log.error("Failed to close channel or connection", e);
+        }
+    }
+    
+    private int getTimeoutAsInt() {
+        if (getPropertyAsInt(TIMEOUT) < 1) {
+            return DEFAULT_TIMEOUT;
+        }
+        return getPropertyAsInt(TIMEOUT);
+    }
+
+    public String getTimeout() {
+        return getPropertyAsString(TIMEOUT, DEFAULT_TIMEOUT_STRING);
+    }
+
+
+    public void setTimeout(String s) {
+        setProperty(TIMEOUT, s);
+    }
+
     public String getExchange() {
         return getPropertyAsString(EXCHANGE);
     }

@@ -24,7 +24,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
 
     private static final long serialVersionUID = 1L;
     
-    private JLabeledTextField timeout = new JLabeledTextField("Timeout"); //$NON-NLS-1$
+    private JPanel mainPanel;
 
     /*
     private static final String[] CONFIG_CHOICES = {"File", "Static"};
@@ -59,13 +59,13 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         if (!(element instanceof AMQPPublisher)) return;
         AMQPPublisher sampler = (AMQPPublisher) element;
 
-        timeout.setText(sampler.getTimeout());
         message.setText(sampler.getMessage());
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public TestElement createTestElement() {
         AMQPPublisher sampler = new AMQPPublisher();
         modifyTestElement(sampler);
@@ -82,11 +82,10 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         
         super.modifyTestElement(sampler);
 
-        sampler.setTimeout(timeout.getText());
         sampler.setMessage(message.getText());
     }
     
-    private JPanel mainPanel;
+    @Override
     protected void setMainPanel(JPanel panel){
         mainPanel = panel;
     }
@@ -114,7 +113,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     @Override
     public void clearGui() {
         super.clearGui();
-        timeout.setText(AMQPPublisher.DEFAULT_TIMEOUT_STRING);
         //messageFile.setFilename("");
         message.setText(""); // $NON-NLS-1$
     }

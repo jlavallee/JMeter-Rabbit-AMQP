@@ -21,6 +21,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host"); //$NON-NLS-1$
     protected JLabeledTextField host = new JLabeledTextField("Host"); //$NON-NLS-1$
     protected JLabeledTextField port = new JLabeledTextField("Port"); //$NON-NLS-1$
+    protected JLabeledTextField timeout = new JLabeledTextField("Timeout"); //$NON-NLS-1$
     protected JLabeledTextField username = new JLabeledTextField("Username"); //$NON-NLS-1$
     protected JLabeledTextField password = new JLabeledTextField("Password"); //$NON-NLS-1$
     
@@ -41,23 +42,11 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         virtualHost.setText(sampler.getVirtualHost());
         host.setText(sampler.getHost());
         port.setText(sampler.getPort());
+        timeout.setText(sampler.getTimeout());
 
         username.setText(sampler.getUsername());
         password.setText(sampler.getPassword());
     }
-
-    @Override
-    public String getLabelResource() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public TestElement createTestElement() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
 
     /**
      * {@inheritDoc}
@@ -70,6 +59,8 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         virtualHost.setText("/");
         host.setText("localhost");
         port.setText(AMQPSampler.DEFAULT_PORT_STRING);
+        timeout.setText(AMQPSampler.DEFAULT_TIMEOUT_STRING);
+        
         username.setText("guest");
         password.setText("guest");
     }
@@ -89,6 +80,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setVirtualHost(virtualHost.getText());
         sampler.setHost(host.getText());
         sampler.setPort(port.getText());
+        sampler.setTimeout(timeout.getText());
 
         sampler.setUsername(username.getText());
         sampler.setPassword(password.getText());
