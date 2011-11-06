@@ -23,6 +23,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField queue = new JLabeledTextField("Queue"); //$NON-NLS-1$
     protected JLabeledTextField routingKey = new JLabeledTextField("Routing Key"); //$NON-NLS-1$
     protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host"); //$NON-NLS-1$
+    protected JLabeledTextField messageTTL = new JLabeledTextField("Message TTL"); //$NON-NLS-1$
     protected JLabeledTextField host = new JLabeledTextField("Host"); //$NON-NLS-1$
     protected JLabeledTextField port = new JLabeledTextField("Port"); //$NON-NLS-1$
     protected JLabeledTextField timeout = new JLabeledTextField("Timeout"); //$NON-NLS-1$
@@ -44,10 +45,12 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         queue.setText(sampler.getQueue());
         routingKey.setText(sampler.getRoutingKey());
         virtualHost.setText(sampler.getVirtualHost());
-        host.setText(sampler.getHost());
-        port.setText(sampler.getPort());
+        messageTTL.setText(sampler.getMessageTTL());
+
         timeout.setText(sampler.getTimeout());
 
+        host.setText(sampler.getHost());
+        port.setText(sampler.getPort());
         username.setText(sampler.getUsername());
         password.setText(sampler.getPassword());
     }
@@ -61,10 +64,12 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         queue.setText("jmeterQueue");
         routingKey.setText("jmeterRoutingKey");
         virtualHost.setText("/");
-        host.setText("localhost");
-        port.setText(AMQPSampler.DEFAULT_PORT_STRING);
+        messageTTL.setText("");
+
         timeout.setText(AMQPSampler.DEFAULT_TIMEOUT_STRING);
 
+        host.setText("localhost");
+        port.setText(AMQPSampler.DEFAULT_PORT_STRING);
         username.setText("guest");
         password.setText("guest");
     }
@@ -82,10 +87,13 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setQueue(queue.getText());
         sampler.setRoutingKey(routingKey.getText());
         sampler.setVirtualHost(virtualHost.getText());
-        sampler.setHost(host.getText());
-        sampler.setPort(port.getText());
+        sampler.setMessageTTL(messageTTL.getText());
+
+
         sampler.setTimeout(timeout.getText());
 
+        sampler.setHost(host.getText());
+        sampler.setPort(port.getText());
         sampler.setUsername(username.getText());
         sampler.setPassword(password.getText());
     }
@@ -96,7 +104,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         add(makeTitlePanel(), BorderLayout.NORTH); // Add the standard title
 
         JPanel mainPanel = new VerticalPanel();
-
 
         mainPanel.add(makeCommonPanel());
 
@@ -140,9 +147,12 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         gridBagConstraints.gridy = 3;
         queueSettings.add(virtualHost, gridBagConstraints);
 
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        queueSettings.add(messageTTL, gridBagConstraints);
+
         gridBagConstraintsCommon.gridx = 0;
         gridBagConstraintsCommon.gridy = 0;
-
         commonPanel.add(queueSettings, gridBagConstraintsCommon);
 
         JPanel serverSettings = new JPanel(new GridBagLayout());

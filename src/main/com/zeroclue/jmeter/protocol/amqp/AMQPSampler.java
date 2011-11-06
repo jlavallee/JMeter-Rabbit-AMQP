@@ -1,6 +1,8 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jorphan.logging.LoggingManager;
@@ -35,6 +37,7 @@ public abstract class AMQPSampler extends AbstractSampler {
     protected static final String USERNAME = "AMQPSampler.Username"; // $NON-NLS-1$
     protected static final String PASSWORD = "AMQPSampler.Password"; // $NON-NLS-1$
     private static final String TIMEOUT = "AMQPSampler.Timeout"; // $NON-NLS-1$
+    private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL"; // $NON-NLS-1$
 
     private transient ConnectionFactory factory;
     private transient Connection connection;
@@ -71,12 +74,21 @@ public abstract class AMQPSampler extends AbstractSampler {
         connection = factory.newConnection();
         channel = connection.createChannel();
         channel.exchangeDeclare(getExchange(), "direct", true);
-        channel.queueDeclare(getQueue(), true, false, false, null);
+        channel.queueDeclare(getQueue(), true, false, false, getQueueArguments());
         channel.queueBind(getQueue(), getExchange(), getRoutingKey());
         if(!channel.isOpen()){
             log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
         }
         setChannel(channel);
+    }
+
+    private Map<String, Object> getQueueArguments() {
+        Map<String, Object> arguments = new HashMap<String, Object>();
+
+        if(getMessageTTL() != null && !getMessageTTL().isEmpty())
+            arguments.put("x-message-ttl", getMessageTTLAsInt());
+
+        return arguments;
     }
 
     protected abstract Channel getChannel();
@@ -168,6 +180,21 @@ public abstract class AMQPSampler extends AbstractSampler {
         setProperty(VIRUTAL_HOST, name);
     }
 
+
+    public String getMessageTTL() {
+        return getPropertyAsString(MESSAGE_TTL);
+    }
+
+    public void setMessageTTL(String name) {
+        setProperty(MESSAGE_TTL, name);
+    }
+
+    protected Integer getMessageTTLAsInt() {
+        if (getPropertyAsInt(MESSAGE_TTL) < 1) {
+            return null;
+        }
+        return getPropertyAsInt(MESSAGE_TTL);
+    }
 
     public String getHost() {
         return getPropertyAsString(HOST);
