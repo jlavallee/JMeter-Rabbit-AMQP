@@ -46,14 +46,14 @@ public abstract class AMQPSampler extends AbstractSampler {
         factory = new ConnectionFactory();
     }
 
-    protected void initChannel() throws IOException {
+    protected boolean initChannel() throws IOException {
         Channel channel = getChannel();
         if(channel != null && channel.isOpen()){
-            return;
+            return false;
         }
         if(channel != null && !channel.isOpen()){
             log.warn("channel " + channel.getChannelNumber()
-                    + " closed unexpectedly: " + channel.getCloseReason().getLocalizedMessage());
+                    + " closed unexpectedly: ", channel.getCloseReason());
         }
         factory.setConnectionTimeout(getTimeoutAsInt());
         factory.setVirtualHost(getVirtualHost());
@@ -89,6 +89,7 @@ public abstract class AMQPSampler extends AbstractSampler {
             log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
         }
         setChannel(channel);
+        return true;
     }
 
     private Map<String, Object> getQueueArguments() {
@@ -138,7 +139,7 @@ public abstract class AMQPSampler extends AbstractSampler {
         }
     }
 
-    private int getTimeoutAsInt() {
+    protected int getTimeoutAsInt() {
         if (getPropertyAsInt(TIMEOUT) < 1) {
             return DEFAULT_TIMEOUT;
         }

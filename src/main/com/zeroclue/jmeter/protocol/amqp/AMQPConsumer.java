@@ -9,7 +9,9 @@ import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jorphan.logging.LoggingManager;
 
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.GetResponse;
+import com.rabbitmq.client.QueueingConsumer;
 
 public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
@@ -21,6 +23,17 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
     private final static String PURGE_QUEUE = "AMQPConsumer.purgeQueue"; //$NON-NLS-1$
 
     private transient Channel channel;
+    private transient QueueingConsumer consumer;
+
+    protected boolean initChannel() throws IOException {
+        if(super.initChannel()){
+            consumer = new QueueingConsumer(channel);
+            // TODO allow setting autoAck
+            channel.basicConsume(getQueue(), false, consumer);
+            return true;
+        }
+        return false;
+    }
 
     /**
      * {@inheritDoc}
@@ -45,19 +58,25 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
          */
         result.sampleStart(); // Start timing
         try {
-            // TODO: perhaps we should start a real consumer?
-            GetResponse resp = channel.basicGet(getQueue(), true);
+            //GetResponse resp = channel.basicGet(getQueue(), true);
+
+            QueueingConsumer.Delivery delivery = consumer.nextDelivery(getTimeoutAsInt());
 
             /*
              * Set up the sample result details
              */
-            result.setSamplerData(new String(resp.getBody()));
+            //result.setSamplerData(new String(resp.getBody()));
+            result.setSamplerData(new String(delivery.getBody()));
+
             result.setResponseData("OK", null);
             result.setDataType(SampleResult.TEXT);
 
             result.setResponseCodeOK();
             result.setResponseMessage("OK");// $NON-NLS-1$
             result.setSuccessful(true);
+
+            // process delivery
+            channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         } catch (Exception ex) {
             log.debug("", ex);
             result.setResponseCode("000");// $NON-NLS-1$
