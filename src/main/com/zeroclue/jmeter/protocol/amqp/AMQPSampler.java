@@ -29,6 +29,7 @@ public abstract class AMQPSampler extends AbstractSampler {
 
     //++ These are JMX names, and must not be changed
     protected static final String EXCHANGE = "AMQPSampler.Exchange";
+    protected static final String EXCHANGE_TYPE = "AMQPSampler.ExchangeType";
     protected static final String QUEUE = "AMQPSampler.Queue";
     protected static final String ROUTING_KEY = "AMQPSampler.RoutingKey";
     protected static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost";
@@ -161,6 +162,15 @@ public abstract class AMQPSampler extends AbstractSampler {
 
     public void setExchange(String name) {
         setProperty(EXCHANGE, name);
+    }
+
+
+    public String getExchangeType() {
+        return getPropertyAsString(EXCHANGE_TYPE);
+    }
+
+    public void setExchangeType(String name) {
+        setProperty(EXCHANGE_TYPE, name);
     }
 
 

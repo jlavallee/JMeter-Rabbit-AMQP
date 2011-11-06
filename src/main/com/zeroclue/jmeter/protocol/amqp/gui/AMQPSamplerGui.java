@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
+import org.apache.jorphan.gui.JLabeledRadio;
 import org.apache.jorphan.gui.JLabeledTextField;
 
 import com.zeroclue.jmeter.protocol.amqp.AMQPSampler;
@@ -24,6 +25,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField routingKey = new JLabeledTextField("Routing Key");
     protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host");
     protected JLabeledTextField messageTTL = new JLabeledTextField("Message TTL");
+    protected JLabeledRadio exchangeType = new JLabeledRadio("Exchange Type", new String[]{ "direct", "fanout"}, "direct");
 
     protected JLabeledTextField host = new JLabeledTextField("Host");
     protected JLabeledTextField port = new JLabeledTextField("Port");
@@ -43,6 +45,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         AMQPSampler sampler = (AMQPSampler) element;
 
         exchange.setText(sampler.getExchange());
+        exchangeType.setText(sampler.getExchangeType());
         queue.setText(sampler.getQueue());
         routingKey.setText(sampler.getRoutingKey());
         virtualHost.setText(sampler.getVirtualHost());
@@ -66,6 +69,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         routingKey.setText("jmeterRoutingKey");
         virtualHost.setText("/");
         messageTTL.setText("");
+        exchangeType.setText("direct");
 
         timeout.setText(AMQPSampler.DEFAULT_TIMEOUT_STRING);
 
@@ -89,6 +93,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setRoutingKey(routingKey.getText());
         sampler.setVirtualHost(virtualHost.getText());
         sampler.setMessageTTL(messageTTL.getText());
+        sampler.setExchangeType(exchangeType.getText());
 
 
         sampler.setTimeout(timeout.getText());
@@ -138,15 +143,15 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        queueSettings.add(queue, gridBagConstraints);
+        queueSettings.add(exchangeType, gridBagConstraints);
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        queueSettings.add(routingKey, gridBagConstraints);
+        queueSettings.add(queue, gridBagConstraints);
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        queueSettings.add(virtualHost, gridBagConstraints);
+        queueSettings.add(routingKey, gridBagConstraints);
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -157,40 +162,37 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         commonPanel.add(queueSettings, gridBagConstraintsCommon);
 
         JPanel serverSettings = new JPanel(new GridBagLayout());
-        serverSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Server"));
+        serverSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Connection"));
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        serverSettings.add(host, gridBagConstraints);
+        serverSettings.add(virtualHost, gridBagConstraints);
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        serverSettings.add(port, gridBagConstraints);
+        serverSettings.add(host, gridBagConstraints);
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        serverSettings.add(username, gridBagConstraints);
+        serverSettings.add(port, gridBagConstraints);
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        serverSettings.add(username, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
         serverSettings.add(password, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        serverSettings.add(timeout, gridBagConstraints);
 
         gridBagConstraintsCommon.gridx = 1;
         gridBagConstraintsCommon.gridy = 0;
 
         commonPanel.add(serverSettings, gridBagConstraintsCommon);
 
-        JPanel clientSettings = new JPanel(new GridBagLayout());
-        clientSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Client"));
-
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        clientSettings.add(timeout, gridBagConstraints);
-
-        gridBagConstraintsCommon.gridx = 0;
-        gridBagConstraintsCommon.gridy = 1;
-
-        commonPanel.add(clientSettings, gridBagConstraintsCommon);
         return commonPanel;
     }
 
