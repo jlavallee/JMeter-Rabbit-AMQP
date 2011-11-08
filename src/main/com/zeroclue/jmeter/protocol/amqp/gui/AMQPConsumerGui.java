@@ -4,6 +4,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 import org.apache.jmeter.testelement.TestElement;
+import org.apache.jorphan.gui.JLabeledTextField;
 
 import com.zeroclue.jmeter.protocol.amqp.AMQPConsumer;
 
@@ -12,6 +13,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
 
     private static final long serialVersionUID = 1L;
 
+    protected JLabeledTextField receiveTimeout = new JLabeledTextField("Receive Timeout");
     private final JCheckBox purgeQueue = new JCheckBox("Purge Queue", false);
     private final JCheckBox autoAck = new JCheckBox("Auto ACK", true);
 
@@ -27,6 +29,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     protected void init() {
         super.init();
 
+        mainPanel.add(receiveTimeout);
         mainPanel.add(purgeQueue);
         mainPanel.add(autoAck);
     }
@@ -57,6 +60,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
 
         super.modifyTestElement(sampler);
 
+        sampler.setReceiveTimeout(receiveTimeout.getText());
         sampler.setPurgeQueue(purgeQueue.isSelected());
         sampler.setAutoAck(autoAck.isSelected());
     }

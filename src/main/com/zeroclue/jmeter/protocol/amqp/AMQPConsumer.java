@@ -9,21 +9,24 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.ShutdownSignalException;
 
 public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
-    private static final long serialVersionUID = 10L;
+    private static final long serialVersionUID = 15L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     //++ These are JMX names, and must not be changed
     private final static String PURGE_QUEUE = "AMQPConsumer.PurgeQueue";
     private final static String AUTO_ACK = "AMQPConsumer.AutoAck";
+    private final static String RECEIVE_TIMEOUT = "AMQPConsumer.ReceiveTimeout";
 
     private transient Channel channel;
     private transient QueueingConsumer consumer;
-
+    
     public AMQPConsumer(){
         super();
     }
@@ -31,6 +34,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
     protected boolean initChannel() throws IOException {
         if(super.initChannel()){
             consumer = new QueueingConsumer(channel);
+            channel.basicQos(1); // TODO: make prefetchCount configurable?
             channel.basicConsume(getQueue(), autoAck(), consumer);
             return true;
         }
@@ -41,11 +45,14 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
      * {@inheritDoc}
      */
     @Override
-    public SampleResult sample(Entry e) {
+    public SampleResult sample(Entry entry) {
         SampleResult result = new SampleResult();
         result.setSampleLabel(getName());
         result.setSuccessful(false);
         result.setResponseCode("500");
+
+
+        trace("AMQPConsumer.sample()");
 
         try {
             initChannel();
@@ -60,9 +67,14 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
          */
         result.sampleStart(); // Start timing
         try {
-            //GetResponse resp = channel.basicGet(getQueue(), true);
-            // TODO: do we want a seperate timeout from the connection timeout?
-            QueueingConsumer.Delivery delivery = consumer.nextDelivery(getTimeoutAsInt());
+            //GetResponse resp = channel.basicGet(getQueue(), autoAck());
+
+            QueueingConsumer.Delivery delivery = consumer.nextDelivery(getReceiveTimeoutAsInt());
+
+            if(delivery == null){
+                log.warn("nextDelivery timed out");
+                return result;
+            }
 
             /*
              * Set up the sample result details
@@ -78,15 +90,31 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
             result.setSuccessful(true);
 
             if(!autoAck())
+                //channel.basicAck(resp.getEnvelope().getDeliveryTag(), false);
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
-        } catch (Exception ex) {
-            log.debug("", ex);
-            result.setResponseCode("000");
-            result.setResponseMessage(ex.toString());
+        } catch (ShutdownSignalException e) {
+            log.warn("AMQP consumer failed to consume", e);
+            result.setResponseCode("400");
+            result.setResponseMessage(e.toString());
+            interrupt();
+        } catch (ConsumerCancelledException e) {
+            log.warn("AMQP consumer failed to consume", e);
+            result.setResponseCode("300");
+            result.setResponseMessage(e.toString());
+            interrupt();
+        } catch (InterruptedException e) {
+            log.warn("AMQP consumer failed to consume", e);
+            result.setResponseCode("200");
+            result.setResponseMessage(e.toString());
+        } catch (IOException e) {
+            log.warn("AMQP consumer failed to consume", e);
+            result.setResponseCode("100");
+            result.setResponseMessage(e.toString());
         }
 
         result.sampleEnd(); // End timimg
+        trace("AMQPConsumer.sample ended");
 
         return result;
     }
@@ -151,11 +179,37 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
         setProperty(AUTO_ACK, content);
     }
 
-    public void setAutoAck(Boolean AutoAck) {
-        setProperty(AUTO_ACK, AutoAck.toString());
+    public void setAutoAck(Boolean autoAck) {
+        setProperty(AUTO_ACK, autoAck.toString());
     }
 
     public boolean autoAck(){
         return Boolean.parseBoolean(getAutoAck());
+    }
+
+    protected int getReceiveTimeoutAsInt() {
+        if (getPropertyAsInt(RECEIVE_TIMEOUT) < 1) {
+            return DEFAULT_TIMEOUT;
+        }
+        return getPropertyAsInt(RECEIVE_TIMEOUT);
+    }
+
+    public String getReceiveTimeout() {
+        return getPropertyAsString(RECEIVE_TIMEOUT, DEFAULT_TIMEOUT_STRING);
+    }
+
+
+    public void setReceiveTimeout(String s) {
+        setProperty(RECEIVE_TIMEOUT, s);
+    }
+
+    /*
+     * Helper method
+     */
+    private void trace(String s) {
+        String tl = getTitle();
+        String tn = Thread.currentThread().getName();
+        String th = this.toString();
+        log.debug(tn + " " + tl + " " + s + " " + th);
     }
 }

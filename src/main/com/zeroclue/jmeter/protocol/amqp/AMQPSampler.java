@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.jmeter.samplers.AbstractSampler;
+import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
@@ -15,12 +16,12 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
 
-public abstract class AMQPSampler extends AbstractSampler {
+public abstract class AMQPSampler extends AbstractSampler implements TestBean {
 
     public static final int DEFAULT_PORT = 5672;
     public static final String DEFAULT_PORT_STRING = Integer.toString(DEFAULT_PORT);
 
-    private static final int DEFAULT_TIMEOUT = 1000;
+    public static final int DEFAULT_TIMEOUT = 1000;
     public static final String DEFAULT_TIMEOUT_STRING = Integer.toString(DEFAULT_TIMEOUT);
 
 
@@ -131,12 +132,13 @@ public abstract class AMQPSampler extends AbstractSampler {
      * @see junit.framework.TestListener#endTest(junit.framework.Test)
      */
     public void testEnded() {
-        log.debug("AMQPSampler.testEnded called");
+        log.info("AMQPSampler.testEnded called");
         try {
-            getChannel().close();
-            connection.close();
+            //getChannel().close();   // closing the connection will close the channel if it's still open
+            if(connection.isOpen())
+                connection.close();
         } catch (IOException e) {
-            log.error("Failed to close channel or connection", e);
+            log.error("Failed to close connection", e);
         }
     }
 
