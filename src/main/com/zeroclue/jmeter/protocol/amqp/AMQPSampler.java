@@ -16,14 +16,13 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
 
-public abstract class AMQPSampler extends AbstractSampler implements TestBean {
+public abstract class AMQPSampler extends AbstractSampler {
 
     public static final int DEFAULT_PORT = 5672;
     public static final String DEFAULT_PORT_STRING = Integer.toString(DEFAULT_PORT);
 
     public static final int DEFAULT_TIMEOUT = 1000;
     public static final String DEFAULT_TIMEOUT_STRING = Integer.toString(DEFAULT_TIMEOUT);
-
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
@@ -71,6 +70,7 @@ public abstract class AMQPSampler extends AbstractSampler implements TestBean {
                 +"\n\t username: " + getUsername()
                 +"\n\t password: " + getPassword()
                 +"\n\t timeout: " + getTimeout()
+                +"\nin " + this
                 );
 
         connection = factory.newConnection();

@@ -184,7 +184,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
     }
 
     public boolean autoAck(){
-        return Boolean.parseBoolean(getAutoAck());
+        return getPropertyAsBoolean(AUTO_ACK);
     }
 
     protected int getReceiveTimeoutAsInt() {

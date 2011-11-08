@@ -11,8 +11,10 @@ import javax.swing.JPanel;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
-import org.apache.jorphan.gui.JLabeledRadio;
+import org.apache.jorphan.gui.JLabeledChoice;
 import org.apache.jorphan.gui.JLabeledTextField;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
 
 import com.zeroclue.jmeter.protocol.amqp.AMQPSampler;
 
@@ -20,12 +22,14 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
     private static final long serialVersionUID = 1L;
 
+    private static final Logger log = LoggingManager.getLoggerForClass();
+
     protected JLabeledTextField exchange = new JLabeledTextField("Exchange");
     protected JLabeledTextField queue = new JLabeledTextField("Queue");
     protected JLabeledTextField routingKey = new JLabeledTextField("Routing Key");
     protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host");
     protected JLabeledTextField messageTTL = new JLabeledTextField("Message TTL");
-    protected JLabeledRadio exchangeType = new JLabeledRadio("Exchange Type", new String[]{ "direct", "fanout"}, "direct");
+    protected JLabeledChoice exchangeType = new JLabeledChoice("Exchange Type", new String[]{ "direct", "topic", "headers", "fanout"});
 
     protected JLabeledTextField host = new JLabeledTextField("Host");
     protected JLabeledTextField port = new JLabeledTextField("Port");
@@ -57,6 +61,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         port.setText(sampler.getPort());
         username.setText(sampler.getUsername());
         password.setText(sampler.getPassword());
+        log.info("AMQPSamplerGui.configure() called");
     }
 
     /**
@@ -102,6 +107,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setPort(port.getText());
         sampler.setUsername(username.getText());
         sampler.setPassword(password.getText());
+        log.info("AMQPSamplerGui.modifyTestElement() called, set user/pass to " + username.getText() + "/" + password.getText() + " on sampler " + sampler);
     }
 
     protected void init() {
