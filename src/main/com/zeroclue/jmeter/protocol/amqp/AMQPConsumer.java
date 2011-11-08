@@ -13,7 +13,7 @@ import com.rabbitmq.client.QueueingConsumer;
 
 public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 10L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
@@ -23,6 +23,10 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
     private transient Channel channel;
     private transient QueueingConsumer consumer;
+
+    public AMQPConsumer(){
+        super();
+    }
 
     protected boolean initChannel() throws IOException {
         if(super.initChannel()){
