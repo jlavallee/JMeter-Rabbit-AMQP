@@ -39,6 +39,9 @@ public abstract class AMQPSampler extends AbstractSampler {
     protected static final String PASSWORD = "AMQPSampler.Password";
     private static final String TIMEOUT = "AMQPSampler.Timeout";
     private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
+    private static final String QUEUE_DURABLE = "AMQPSampler.QueueDurable";
+    private static final String QUEUE_EXCLUSIVE = "AMQPSampler.QueueExclusive";
+    private static final String QUEUE_AUTO_DELETE = "AMQPSampler.QueueAutoDelete";
 
     private transient ConnectionFactory factory;
     private transient Connection connection;
@@ -75,9 +78,11 @@ public abstract class AMQPSampler extends AbstractSampler {
 
         connection = factory.newConnection();
         channel = connection.createChannel();
-        channel.exchangeDeclare(getExchange(), "direct", true);
-        channel.queueDeclare(getQueue(), true, false, false, getQueueArguments());
-        channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+        channel.exchangeDeclare(getExchange(), getExchangeType(), true);
+        if(getQueue() != null && !getQueue().isEmpty()){
+            channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
+            channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+        }
 
         log.info("bound to:"
                 +"\n\t queue: " + getQueue()
@@ -259,5 +264,62 @@ public abstract class AMQPSampler extends AbstractSampler {
 
     public void setPassword(String name) {
         setProperty(PASSWORD, name);
+    }
+
+    /**
+     * @return the whether or not the queue is durable
+     */
+    public String getQueueDurable() {
+        return getPropertyAsString(QUEUE_DURABLE);
+    }
+
+    public void setQueueDurable(String content) {
+        setProperty(QUEUE_DURABLE, content);
+    }
+
+    public void setQueueDurable(Boolean value) {
+        setProperty(QUEUE_DURABLE, value.toString());
+    }
+
+    public boolean queueDurable(){
+        return getPropertyAsBoolean(QUEUE_DURABLE);
+    }
+
+    /**
+     * @return the whether or not the queue is exclusive
+     */
+    public String getQueueExclusive() {
+        return getPropertyAsString(QUEUE_EXCLUSIVE);
+    }
+
+    public void setQueueExclusive(String content) {
+        setProperty(QUEUE_EXCLUSIVE, content);
+    }
+
+    public void setQueueExclusive(Boolean value) {
+        setProperty(QUEUE_EXCLUSIVE, value.toString());
+    }
+
+    public boolean queueExclusive(){
+        return getPropertyAsBoolean(QUEUE_EXCLUSIVE);
+    }
+
+    /**
+     * @return the whether or not the queue should auto delete
+     */
+    public String getQueueAutoDelete() {
+        return getPropertyAsString(QUEUE_AUTO_DELETE);
+    }
+
+    public void setQueueAutoDelete(String content) {
+        setProperty(QUEUE_AUTO_DELETE, content);
+    }
+
+    public void setQueueAutoDelete(Boolean value) {
+        setProperty(QUEUE_AUTO_DELETE, value.toString());
+    }
+
+    public boolean queueAutoDelete(){
+        return getPropertyAsBoolean(QUEUE_AUTO_DELETE);
     }
 }

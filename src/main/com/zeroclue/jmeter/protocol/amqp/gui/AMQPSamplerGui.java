@@ -6,6 +6,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 import org.apache.jmeter.gui.util.VerticalPanel;
@@ -30,6 +31,9 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host");
     protected JLabeledTextField messageTTL = new JLabeledTextField("Message TTL");
     protected JLabeledChoice exchangeType = new JLabeledChoice("Exchange Type", new String[]{ "direct", "topic", "headers", "fanout"});
+    private final JCheckBox queueDurable = new JCheckBox("Durable?", true);
+    private final JCheckBox queueExclusive = new JCheckBox("Exclusive", true);
+    private final JCheckBox queueAutoDelete = new JCheckBox("Auto Delete?", true);
 
     protected JLabeledTextField host = new JLabeledTextField("Host");
     protected JLabeledTextField port = new JLabeledTextField("Port");
@@ -54,6 +58,9 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         routingKey.setText(sampler.getRoutingKey());
         virtualHost.setText(sampler.getVirtualHost());
         messageTTL.setText(sampler.getMessageTTL());
+        queueDurable.setSelected(sampler.queueDurable());
+        queueExclusive.setSelected(sampler.queueExclusive());
+        queueAutoDelete.setSelected(sampler.queueAutoDelete());
 
         timeout.setText(sampler.getTimeout());
 
@@ -75,6 +82,9 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         virtualHost.setText("/");
         messageTTL.setText("");
         exchangeType.setText("direct");
+        queueDurable.setSelected(true);
+        queueExclusive.setSelected(false);
+        queueAutoDelete.setSelected(false);
 
         timeout.setText(AMQPSampler.DEFAULT_TIMEOUT_STRING);
 
@@ -99,7 +109,9 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setVirtualHost(virtualHost.getText());
         sampler.setMessageTTL(messageTTL.getText());
         sampler.setExchangeType(exchangeType.getText());
-
+        sampler.setQueueDurable(queueDurable.isSelected());
+        sampler.setQueueExclusive(queueExclusive.isSelected());
+        sampler.setQueueAutoDelete(queueAutoDelete.isSelected());
 
         sampler.setTimeout(timeout.getText());
 
@@ -141,7 +153,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         JPanel commonPanel = new JPanel(new GridBagLayout());
 
         JPanel queueSettings = new JPanel(new GridBagLayout());
-        queueSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Queue"));
+        queueSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Exchange / Queue"));
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -149,23 +161,37 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        queueSettings.add(exchangeType, gridBagConstraints);
-
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
         queueSettings.add(queue, gridBagConstraints);
 
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         queueSettings.add(routingKey, gridBagConstraints);
 
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         queueSettings.add(messageTTL, gridBagConstraints);
+
+
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        queueSettings.add(exchangeType, gridBagConstraints);
+
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        queueSettings.add(queueDurable, gridBagConstraints);
+
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        queueSettings.add(queueExclusive, gridBagConstraints);
+
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        queueSettings.add(queueAutoDelete, gridBagConstraints);
 
         gridBagConstraintsCommon.gridx = 0;
         gridBagConstraintsCommon.gridy = 0;
         commonPanel.add(queueSettings, gridBagConstraintsCommon);
+
 
         JPanel serverSettings = new JPanel(new GridBagLayout());
         serverSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Connection"));
