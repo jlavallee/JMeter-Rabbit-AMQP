@@ -1,25 +1,40 @@
 <?xml version="1.0"?>
 <project name="JMeter-AMQP" default="package" basedir=".">
   <description>
-
     To build JMeter-AMQP from source:
       ant 
 
     To rebuild:
-      ant clean install
+      ant clean package
 
     For more info:
       ant -projecthelp
 
-    To diagnose usage of deprecated APIs:
+    Note that you need to have the following jars in lib/ to build JMeter-AMQP:
+
+       rabbitmq-client.jar    >= 2.6.1  (from http://www.rabbitmq.com)
+       ApacheJMeter_core.jar            (from jmeter-trunk)
+       commons-codec-1.4.jar            (also used by jmeter)
+       commons-collections-3.2.1.jar
+       commons-httpclient-3.1.jar
+       commons-io-1.4.jar
+       commons-jexl-1.1.jar
+       commons-lang-2.4.jar
+       commons-logging-1.1.1.jar
+       commons-net-1.4.1.jar
+       jorphan.jar
+       logkit-2.0.jar
+
+
   </description>
 
+  <!-- Check the Ant version -->
+  <available property="Ant-1.8.0-or-later" classname="org.apache.tools.ant.taskdefs.Local"/>
+  <fail message="This build requires Ant 1.8.0 or later" unless="Ant-1.8.0-or-later"/>
 
   <property name="src.dir" value="src/main"/>
-  <property name="test.src.dir" value="src/test"/>
 
   <property name="build.dir" value="target/classes"/>
-  <property name="test.build.dir" value="target/test-classes"/>
   <property name="dest.dir" value="target/dist"/>
   <property name="lib.dir" value="lib"/>
 
@@ -29,8 +44,6 @@
   <property name="target.java.version" value="1.5"/>
   <property name="src.java.version" value="1.5"/>
   <property name="encoding" value="UTF-8"/>
-  <!-- Set test encoding to the same default, but allow override -->
-  <property name="test.encoding" value="${encoding}"/>  
   <property name="includeAntRuntime" value="false"/>
 
   <target name="compile"  description="Compile.">
@@ -53,18 +66,6 @@
   </target>
 
 
-  <target name="compile-tests" description="Compile test components only">
-    <mkdir dir="${test.build.dir}"/>
-    <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" source="${src.java.version}" optimize="${optimize}" debug="on" target="${target.java.version}" includeAntRuntime="${includeAntRuntime}" deprecation="${deprecation}" encoding="${encoding}">
-      <classpath>
-        <pathelement location="${build.dir}"/>
-        <!-- Also include compiled jars to allow running tests without rebuilding source -->
-        <fileset dir="${dest.dir}" includes="*.jar"/>
-        <path refid="classpath"/>
-      </classpath>
-    </javac>
-  </target>
-
   <target name="package" depends="compile"
      description="Compile everything and create the jars">
 
@@ -76,10 +77,6 @@
       <fileset dir="${src.dir}" includes="**/*.properties" />
     </jar>
   </target>
-
-  <!-- Check the Ant version -->
-  <available property="Ant-1.8.0-or-later" classname="org.apache.tools.ant.taskdefs.Local"/>
-  <fail message="This build requires Ant 1.8.0 or later" unless="Ant-1.8.0-or-later"/>
 
   <target name="clean" description="Clean up to force a build from source.">
     <delete quiet="true">
