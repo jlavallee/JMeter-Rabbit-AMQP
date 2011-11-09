@@ -152,29 +152,31 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
         JPanel commonPanel = new JPanel(new GridBagLayout());
 
-        JPanel queueSettings = new JPanel(new GridBagLayout());
-        queueSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Exchange / Queue"));
-
+        JPanel exchangeSettings = new JPanel(new GridBagLayout());
+        exchangeSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Exchange"));
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        queueSettings.add(exchange, gridBagConstraints);
-
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        queueSettings.add(queue, gridBagConstraints);
-
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        queueSettings.add(routingKey, gridBagConstraints);
-
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        queueSettings.add(messageTTL, gridBagConstraints);
-
+        exchangeSettings.add(exchange, gridBagConstraints);
 
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        queueSettings.add(exchangeType, gridBagConstraints);
+        exchangeSettings.add(exchangeType, gridBagConstraints);
+
+        JPanel queueSettings = new JPanel(new GridBagLayout());
+        queueSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Queue"));
+
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        queueSettings.add(queue, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        queueSettings.add(routingKey, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        queueSettings.add(messageTTL, gridBagConstraints);
 
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -190,7 +192,12 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
         gridBagConstraintsCommon.gridx = 0;
         gridBagConstraintsCommon.gridy = 0;
-        commonPanel.add(queueSettings, gridBagConstraintsCommon);
+
+        JPanel exchangeQueueSettings = new VerticalPanel();
+        exchangeQueueSettings.add(exchangeSettings);
+        exchangeQueueSettings.add(queueSettings);
+
+        commonPanel.add(exchangeQueueSettings, gridBagConstraintsCommon);
 
 
         JPanel serverSettings = new JPanel(new GridBagLayout());
