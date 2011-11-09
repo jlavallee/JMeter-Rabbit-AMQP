@@ -43,6 +43,29 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
      * {@inheritDoc}
      */
     @Override
+    public void configure(TestElement element) {
+        super.configure(element);
+        if (!(element instanceof AMQPConsumer)) return;
+        AMQPConsumer sampler = (AMQPConsumer) element;
+
+        purgeQueue.setSelected(sampler.purgeQueue());
+        autoAck.setSelected(sampler.autoAck());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clearGui() {
+        super.clearGui();
+        purgeQueue.setSelected(false);
+        autoAck.setSelected(true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public TestElement createTestElement() {
         AMQPConsumer sampler = new AMQPConsumer();
         modifyTestElement(sampler);
