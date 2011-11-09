@@ -27,7 +27,8 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     //++ These are JMX names, and must not be changed
-    private final static String MESSAGE = "AMQPPublisher.message";
+    private final static String MESSAGE = "AMQPPublisher.Message";
+    private final static String MESSAGE_ROUTING_KEY = "AMQPPublisher.MessageRoutingKey";
 
     private transient Channel channel;
 
@@ -60,7 +61,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
          */
         result.sampleStart(); // Start timing
         try {
-            channel.basicPublish(getExchange(), getRoutingKey(), getProperties(), getMessageBytes());
+            channel.basicPublish(getExchange(), getMessageRoutingKey(), getProperties(), getMessageBytes());
             /*
              * Set up the sample result details
              */
@@ -85,6 +86,17 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     private byte[] getMessageBytes() {
         return getMessage().getBytes();
+    }
+
+    /**
+     * @return the message routing key for the sample
+     */
+    public String getMessageRoutingKey() {
+        return getPropertyAsString(MESSAGE_ROUTING_KEY);
+    }
+
+    public void setMessageRoutingKey(String content) {
+        setProperty(MESSAGE_ROUTING_KEY, content);
     }
 
     /**

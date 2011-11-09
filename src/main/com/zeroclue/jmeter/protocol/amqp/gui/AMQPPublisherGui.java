@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.gui.JLabeledTextArea;
+import org.apache.jorphan.gui.JLabeledTextField;
 
 import com.zeroclue.jmeter.protocol.amqp.AMQPPublisher;
 
@@ -31,6 +32,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     private final FilePanel messageFile = new FilePanel("Filename", ALL_FILES);
     */
     private JLabeledTextArea message = new JLabeledTextArea("Message Content");
+    private JLabeledTextField messageRoutingKey = new JLabeledTextField("Routing Key");
 
     public AMQPPublisherGui(){
         init();
@@ -58,6 +60,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         if (!(element instanceof AMQPPublisher)) return;
         AMQPPublisher sampler = (AMQPPublisher) element;
 
+        messageRoutingKey.setText(sampler.getMessageRoutingKey());
         message.setText(sampler.getMessage());
     }
 
@@ -82,6 +85,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
 
         super.modifyTestElement(sampler);
 
+        sampler.setMessageRoutingKey(messageRoutingKey.getText());
         sampler.setMessage(message.getText());
     }
 
@@ -95,15 +99,11 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
      */
     protected void init() {
         super.init();
+        messageRoutingKey.setPreferredSize(new Dimension(100, 25));
+        message.setPreferredSize(new Dimension(400, 150));
 
-        /*
-        configChoice.setLayout(new BoxLayout(configChoice, BoxLayout.X_AXIS));
-        mainPanel.add(configChoice);
-        mainPanel.add(messageFile);
-        */
+        mainPanel.add(messageRoutingKey);
         mainPanel.add(message);
-        Dimension pref = new Dimension(400, 150);
-        message.setPreferredSize(pref);
     }
 
     /**
@@ -112,7 +112,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     @Override
     public void clearGui() {
         super.clearGui();
-        //messageFile.setFilename("");
+        messageRoutingKey.setText("");
         message.setText("");
     }
 }
