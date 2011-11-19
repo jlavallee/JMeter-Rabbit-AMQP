@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.jmeter.samplers.AbstractSampler;
-import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
