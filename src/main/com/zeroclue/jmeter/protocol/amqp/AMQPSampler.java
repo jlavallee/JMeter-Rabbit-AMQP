@@ -29,6 +29,7 @@ public abstract class AMQPSampler extends AbstractSampler {
     //++ These are JMX names, and must not be changed
     protected static final String EXCHANGE = "AMQPSampler.Exchange";
     protected static final String EXCHANGE_TYPE = "AMQPSampler.ExchangeType";
+    protected static final String EXCHANGE_DURABLE = "AMQPSampler.ExchangeDurable";
     protected static final String QUEUE = "AMQPSampler.Queue";
     protected static final String ROUTING_KEY = "AMQPSampler.RoutingKey";
     protected static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost";
@@ -38,6 +39,7 @@ public abstract class AMQPSampler extends AbstractSampler {
     protected static final String PASSWORD = "AMQPSampler.Password";
     private static final String TIMEOUT = "AMQPSampler.Timeout";
     private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
+    private static final String MESSAGE_EXPIRES = "AMQPSampler.MessageExpires";
     private static final String QUEUE_DURABLE = "AMQPSampler.QueueDurable";
     private static final String QUEUE_EXCLUSIVE = "AMQPSampler.QueueExclusive";
     private static final String QUEUE_AUTO_DELETE = "AMQPSampler.QueueAutoDelete";
@@ -77,7 +79,7 @@ public abstract class AMQPSampler extends AbstractSampler {
 
         connection = factory.newConnection();
         channel = connection.createChannel();
-        channel.exchangeDeclare(getExchange(), getExchangeType(), true);
+        channel.exchangeDeclare(getExchange(), getExchangeType(), getExchangeDurable());
         if(getQueue() != null && !getQueue().isEmpty()){
             channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
             channel.queueBind(getQueue(), getExchange(), getRoutingKey());
@@ -86,6 +88,7 @@ public abstract class AMQPSampler extends AbstractSampler {
         log.info("bound to:"
                 +"\n\t queue: " + getQueue()
                 +"\n\t exchange: " + getExchange()
+                +"\n\t exchange(D)? " + getExchangeDurable()
                 +"\n\t routing key: " + getRoutingKey()
                 +"\n\t arguments: " + getQueueArguments()
                 );
@@ -103,6 +106,9 @@ public abstract class AMQPSampler extends AbstractSampler {
 
         if(getMessageTTL() != null && !getMessageTTL().isEmpty())
             arguments.put("x-message-ttl", getMessageTTLAsInt());
+
+        if(getMessageExpires() != null && !getMessageExpires().isEmpty())
+            arguments.put("x-expires", getMessageExpiresAsInt());
 
         return arguments;
     }
@@ -171,6 +177,15 @@ public abstract class AMQPSampler extends AbstractSampler {
     }
 
 
+    public boolean getExchangeDurable() {
+        return getPropertyAsBoolean(EXCHANGE_DURABLE);
+    }
+
+    public void setExchangeDurable(boolean durable) {
+        setProperty(EXCHANGE_DURABLE, durable);
+    }
+
+
     public String getExchangeType() {
         return getPropertyAsString(EXCHANGE_TYPE);
     }
@@ -221,6 +236,23 @@ public abstract class AMQPSampler extends AbstractSampler {
         }
         return getPropertyAsInt(MESSAGE_TTL);
     }
+
+
+    public String getMessageExpires() {
+        return getPropertyAsString(MESSAGE_EXPIRES);
+    }
+
+    public void setMessageExpires(String name) {
+        setProperty(MESSAGE_EXPIRES, name);
+    }
+
+    protected Integer getMessageExpiresAsInt() {
+        if (getPropertyAsInt(MESSAGE_EXPIRES) < 1) {
+            return null;
+        }
+        return getPropertyAsInt(MESSAGE_EXPIRES);
+    }
+
 
     public String getHost() {
         return getPropertyAsString(HOST);
