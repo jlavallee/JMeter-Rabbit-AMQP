@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
+import org.apache.jmeter.testelement.TestStateListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
@@ -13,9 +14,9 @@ import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
 
-public class AMQPConsumer extends AMQPSampler implements Interruptible {
+public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStateListener {
 
-    private static final long serialVersionUID = 15L;
+    private static final long serialVersionUID = 7480863561320459091L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
@@ -26,7 +27,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
     private transient Channel channel;
     private transient QueueingConsumer consumer;
-    
+
     public AMQPConsumer(){
         super();
     }
@@ -120,26 +121,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
     }
 
     @Override
-    public boolean interrupt() {
-        testEnded();
-        return true;
-    }
-    /**
-     * {@inheritDoc}
-     */
-    public void testEnded() {
-        if(purgeQueue()){
-            log.info("Purging queue " + getQueue());
-            try {
-                channel.queuePurge(getQueue());
-            } catch (IOException e) {
-                log.error("Failed to purge queue " + getQueue(), e);
-            }
-        }
-        super.testEnded();
-    }
-
-    @Override
     protected Channel getChannel() {
         return channel;
     }
@@ -201,6 +182,42 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible {
 
     public void setReceiveTimeout(String s) {
         setProperty(RECEIVE_TIMEOUT, s);
+    }
+
+    @Override
+    public boolean interrupt() {
+        testEnded();
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void testEnded() {
+        if(purgeQueue()){
+            log.info("Purging queue " + getQueue());
+            try {
+                channel.queuePurge(getQueue());
+            } catch (IOException e) {
+                log.error("Failed to purge queue " + getQueue(), e);
+            }
+        }
+    }
+
+    @Override
+    public void testEnded(String arg0) {
+
+    }
+
+    @Override
+    public void testStarted() {
+
+    }
+
+    @Override
+    public void testStarted(String arg0) {
+
     }
 
     /*

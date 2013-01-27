@@ -22,7 +22,7 @@ import com.rabbitmq.client.Channel;
  */
 public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = -8420658040465788497L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
@@ -110,10 +110,9 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         setProperty(MESSAGE, content);
     }
 
-
     @Override
     public boolean interrupt() {
-        testEnded();
+        cleanup();
         return true;
     }
 

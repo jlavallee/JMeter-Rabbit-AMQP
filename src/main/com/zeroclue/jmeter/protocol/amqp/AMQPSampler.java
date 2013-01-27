@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.jmeter.samplers.AbstractSampler;
+import org.apache.jmeter.testelement.TestStateListener;
+import org.apache.jmeter.testelement.ThreadListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
@@ -15,7 +17,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
 
-public abstract class AMQPSampler extends AbstractSampler {
+public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
 
     public static final int DEFAULT_PORT = 5672;
     public static final String DEFAULT_PORT_STRING = Integer.toString(DEFAULT_PORT);
@@ -41,12 +43,14 @@ public abstract class AMQPSampler extends AbstractSampler {
     private static final String QUEUE_DURABLE = "AMQPSampler.QueueDurable";
     private static final String QUEUE_EXCLUSIVE = "AMQPSampler.QueueExclusive";
     private static final String QUEUE_AUTO_DELETE = "AMQPSampler.QueueAutoDelete";
+    private static final int DEFAULT_HEARTBEAT = 1;
 
     private transient ConnectionFactory factory;
     private transient Connection connection;
 
     protected AMQPSampler(){
         factory = new ConnectionFactory();
+        factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
     }
 
     protected boolean initChannel() throws IOException {
@@ -72,6 +76,7 @@ public abstract class AMQPSampler extends AbstractSampler {
                 +"\n\t username: " + getUsername()
                 +"\n\t password: " + getPassword()
                 +"\n\t timeout: " + getTimeout()
+                +"\n\t heartbeat: " + factory.getRequestedHeartbeat()
                 +"\nin " + this
                 );
 
@@ -121,29 +126,6 @@ public abstract class AMQPSampler extends AbstractSampler {
      */
     protected String getTitle() {
         return this.getName();
-    }
-
-    /**
-     * the implementation calls testEnded() without any parameters.
-     */
-    public void testEnded(String host) {
-        testEnded();
-    }
-
-    /**
-     * endTest cleans up the client
-     *
-     * @see junit.framework.TestListener#endTest(junit.framework.Test)
-     */
-    public void testEnded() {
-        log.info("AMQPSampler.testEnded called");
-        try {
-            //getChannel().close();   // closing the connection will close the channel if it's still open
-            if(connection.isOpen())
-                connection.close();
-        } catch (IOException e) {
-            log.error("Failed to close connection", e);
-        }
     }
 
     protected int getTimeoutAsInt() {
@@ -320,5 +302,26 @@ public abstract class AMQPSampler extends AbstractSampler {
 
     public boolean queueAutoDelete(){
         return getPropertyAsBoolean(QUEUE_AUTO_DELETE);
+    }
+
+    protected void cleanup() {
+        try {
+            //getChannel().close();   // closing the connection will close the channel if it's still open
+            if(connection != null && connection.isOpen())
+                connection.close();
+        } catch (IOException e) {
+            log.error("Failed to close connection", e);
+        }
+    }
+
+    @Override
+    public void threadFinished() {
+        log.info("AMQPSampler.threadFinished called");
+        cleanup();
+    }
+
+    @Override
+    public void threadStarted() {
+
     }
 }
