@@ -68,8 +68,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
          */
         result.sampleStart(); // Start timing
         try {
-            //GetResponse resp = channel.basicGet(getQueue(), autoAck());
-
             QueueingConsumer.Delivery delivery = consumer.nextDelivery(getReceiveTimeoutAsInt());
 
             if(delivery == null){
@@ -80,7 +78,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
             /*
              * Set up the sample result details
              */
-            //result.setSamplerData(new String(resp.getBody()));
             result.setSamplerData(new String(delivery.getBody()));
 
             result.setResponseData("OK", null);
@@ -91,7 +88,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
             result.setSuccessful(true);
 
             if(!autoAck())
-                //channel.basicAck(resp.getEnvelope().getDeliveryTag(), false);
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
         } catch (ShutdownSignalException e) {
