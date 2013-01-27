@@ -101,7 +101,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
             result.setResponseMessage(e.toString());
             interrupt();
         } catch (InterruptedException e) {
-            log.warn("AMQP consumer failed to consume", e);
+            log.info("interuppted while attempting to consume");
             result.setResponseCode("200");
             result.setResponseMessage(e.toString());
         } catch (IOException e) {
