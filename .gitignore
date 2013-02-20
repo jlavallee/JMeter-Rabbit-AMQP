@@ -7,3 +7,6 @@ stats/
 target/
 gc.log
 lib/
+/nbproject/private/
+/build/
+/dist/
