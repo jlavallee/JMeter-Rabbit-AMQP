@@ -41,4 +41,4 @@ The project is built using Ant. To execute the build script, just execute:
 Installing
 ----------
 
-To install the plugin, build the project and copy the generated JMeterAMQP.jar file from target/dist to JMeter's lib/ directory.
+To install the plugin, build the project and copy the generated JMeterAMQP.jar file from target/dist to JMeter's lib/ext/ directory.
