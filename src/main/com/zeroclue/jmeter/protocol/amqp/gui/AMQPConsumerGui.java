@@ -48,6 +48,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
         if (!(element instanceof AMQPConsumer)) return;
         AMQPConsumer sampler = (AMQPConsumer) element;
 
+        receiveTimeout.setText(sampler.getReceiveTimeout());
         purgeQueue.setSelected(sampler.purgeQueue());
         autoAck.setSelected(sampler.autoAck());
     }
@@ -58,6 +59,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     @Override
     public void clearGui() {
         super.clearGui();
+        receiveTimeout.setText("");
         purgeQueue.setSelected(false);
         autoAck.setSelected(true);
     }
