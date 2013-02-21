@@ -15,6 +15,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
+import org.apache.commons.lang.StringUtils;
 
 public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
 
@@ -54,37 +55,48 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
     protected boolean initChannel() throws IOException {
         Channel channel = getChannel();
-        if(channel != null && channel.isOpen()){
-            return false;
-        }
+
         if(channel != null && !channel.isOpen()){
             log.warn("channel " + channel.getChannelNumber()
                     + " closed unexpectedly: ", channel.getCloseReason());
         }
-        factory.setConnectionTimeout(getTimeoutAsInt());
-        factory.setVirtualHost(getVirtualHost());
-        factory.setHost(getHost());
-        factory.setPort(getPortAsInt());
-        factory.setUsername(getUsername());
-        factory.setPassword(getPassword());
+        
+        if(channel == null) {
+            factory.setConnectionTimeout(getTimeoutAsInt());
+            factory.setVirtualHost(getVirtualHost());
+            factory.setHost(getHost());
+            factory.setPort(getPortAsInt());
+            factory.setUsername(getUsername());
+            factory.setPassword(getPassword());
 
-        log.info("RabbitMQ ConnectionFactory using:"
-                +"\n\t virtual host: " + getVirtualHost()
-                +"\n\t host: " + getHost()
-                +"\n\t port: " + getPort()
-                +"\n\t username: " + getUsername()
-                +"\n\t password: " + getPassword()
-                +"\n\t timeout: " + getTimeout()
-                +"\n\t heartbeat: " + factory.getRequestedHeartbeat()
-                +"\nin " + this
-                );
+            log.info("RabbitMQ ConnectionFactory using:"
+                    +"\n\t virtual host: " + getVirtualHost()
+                    +"\n\t host: " + getHost()
+                    +"\n\t port: " + getPort()
+                    +"\n\t username: " + getUsername()
+                    +"\n\t password: " + getPassword()
+                    +"\n\t timeout: " + getTimeout()
+                    +"\n\t heartbeat: " + factory.getRequestedHeartbeat()
+                    +"\nin " + this
+                    );
 
-        connection = factory.newConnection();
-        channel = connection.createChannel();
-        channel.exchangeDeclare(getExchange(), getExchangeType(), true);
-        if(getQueue() != null && !getQueue().isEmpty()){
+            connection = factory.newConnection();
+            channel = connection.createChannel();
+            
+            if(!channel.isOpen()){
+                log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
+            }
+            setChannel(channel);
+        }
+        
+        //TODO: Break out queue binding
+        if(getQueue() != null && !getQueue().isEmpty()) {
             channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
-            channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+        
+            if(!StringUtils.isBlank(getExchange())) { //Use a named exchange
+                channel.exchangeDeclare(getExchange(), getExchangeType(), true);
+                channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+            }
         }
 
         log.info("bound to:"
@@ -94,11 +106,6 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
                 +"\n\t arguments: " + getQueueArguments()
                 );
 
-
-        if(!channel.isOpen()){
-            log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
-        }
-        setChannel(channel);
         return true;
     }
 
