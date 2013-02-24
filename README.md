@@ -13,19 +13,7 @@ Prior to building or installing this JMeter plugin, ensure that the RabbitMQ cli
 Build Dependencies
 ------------------
 
-Before building the project, first create a lib/ directory underneath the base directory. 
-One can either symlink or copy the following files from the JMeter lib/ directory into JMeter-Rabbit-AMQP's lib/ directory:
-* rabbitmq-client.jar
-* commons-codec-*.jar
-* commons-collections-*.jar
-* commons-httpclient-*.jar
-* commons-io-*.jar
-* commons-jexl-*.jar
-* commons-lang-*.jar
-* commons-logging-*.jar
-* commons-net-*.jar
-* jorphan.jar
-* logkit.jar
+Build dependencies are managed by Ivy. JARs should automagically be downloaded by Ivy as part of the build process.
 
 In addition, you'll need to copy or symlink the following from JMeter's lib/ext directory:
 * ApacheJMeter_core.jar
