@@ -26,20 +26,9 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     private final static String RECEIVE_TIMEOUT = "AMQPConsumer.ReceiveTimeout";
 
     private transient Channel channel;
-    private transient QueueingConsumer consumer;
 
     public AMQPConsumer(){
         super();
-    }
-
-    protected boolean initChannel() throws IOException {
-        if(super.initChannel()){
-            consumer = new QueueingConsumer(channel);
-            channel.basicQos(1); // TODO: make prefetchCount configurable?
-            channel.basicConsume(getQueue(), autoAck(), consumer);
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -52,11 +41,17 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         result.setSuccessful(false);
         result.setResponseCode("500");
 
+        QueueingConsumer consumer;
+        String consumerTag;
 
         trace("AMQPConsumer.sample()");
 
         try {
             initChannel();
+            
+            consumer = new QueueingConsumer(channel);
+            channel.basicQos(1); // TODO: make prefetchCount configurable?
+            consumerTag = channel.basicConsume(getQueue(), autoAck(), consumer);
         } catch (IOException ex) {
             log.error("Failed to initialize channel", ex);
             return result;
@@ -108,6 +103,12 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
             log.warn("AMQP consumer failed to consume", e);
             result.setResponseCode("100");
             result.setResponseMessage(e.toString());
+        } finally {
+            try {
+                channel.basicCancel(consumerTag);
+            } catch(IOException e) {
+                log.error("Couldn't safely cancel the sample's consumer", e);
+            }
         }
 
         result.sampleEnd(); // End timimg
