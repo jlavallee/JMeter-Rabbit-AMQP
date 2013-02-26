@@ -1,5 +1,6 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
+import com.rabbitmq.client.AMQP;
 import java.io.IOException;
 
 import org.apache.jmeter.samplers.Entry;
@@ -29,6 +30,9 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     //++ These are JMX names, and must not be changed
     private final static String MESSAGE = "AMQPPublisher.Message";
     private final static String MESSAGE_ROUTING_KEY = "AMQPPublisher.MessageRoutingKey";
+    private final static String MESSAGE_TYPE = "AMQPPublisher.MessageType";
+    private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
+    private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
 
     private transient Channel channel;
 
@@ -110,6 +114,39 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         setProperty(MESSAGE, content);
     }
 
+    /**
+     * @return the message type for the sample
+     */
+    public String getMessageType() {
+        return getPropertyAsString(MESSAGE_TYPE);
+    }
+
+    public void setMessageType(String content) {
+        setProperty(MESSAGE_TYPE, content);
+    }
+
+    /**
+     * @return the reply-to queue for the sample
+     */
+    public String getReplyToQueue() {
+        return getPropertyAsString(REPLY_TO_QUEUE);
+    }
+
+    public void setReplyToQueue(String content) {
+        setProperty(REPLY_TO_QUEUE, content);
+    }
+
+    /**
+     * @return the correlation identifier for the sample
+     */
+    public String getCorrelationId() {
+        return getPropertyAsString(CORRELATION_ID);
+    }
+
+    public void setCorrelationId(String content) {
+        setProperty(CORRELATION_ID, content);
+    }
+
     @Override
     public boolean interrupt() {
         cleanup();
@@ -124,6 +161,20 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     @Override
     protected void setChannel(Channel channel) {
         this.channel = channel;
+    }
+
+    @Override
+    protected AMQP.BasicProperties getProperties() {
+        AMQP.BasicProperties parentProps = super.getProperties();
+        
+        AMQP.BasicProperties publishProperties = 
+                new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
+                parentProps.getHeaders(), parentProps.getDeliveryMode(), parentProps.getPriority(),
+                getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
+                parentProps.getMessageId(), parentProps.getTimestamp(), getMessageType(),
+                parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
+        
+        return publishProperties;
     }
 
 }
