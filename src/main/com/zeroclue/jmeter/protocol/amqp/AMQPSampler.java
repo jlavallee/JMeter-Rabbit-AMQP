@@ -87,24 +87,24 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
                 log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
             }
             setChannel(channel);
-        }
-        
-        //TODO: Break out queue binding
-        if(getQueue() != null && !getQueue().isEmpty()) {
-            channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
-        
-            if(!StringUtils.isBlank(getExchange())) { //Use a named exchange
-                channel.exchangeDeclare(getExchange(), getExchangeType(), true);
-                channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+            
+            //TODO: Break out queue binding
+            if(getQueue() != null && !getQueue().isEmpty()) {
+                channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
+            
+                if(!StringUtils.isBlank(getExchange())) { //Use a named exchange
+                    channel.exchangeDeclare(getExchange(), getExchangeType(), true);
+                    channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+                }
             }
-        }
 
-        log.info("bound to:"
-                +"\n\t queue: " + getQueue()
-                +"\n\t exchange: " + getExchange()
-                +"\n\t routing key: " + getRoutingKey()
-                +"\n\t arguments: " + getQueueArguments()
-                );
+            log.info("bound to:"
+                    +"\n\t queue: " + getQueue()
+                    +"\n\t exchange: " + getExchange()
+                    +"\n\t routing key: " + getRoutingKey()
+                    +"\n\t arguments: " + getQueueArguments()
+                    );
+        }
 
         return true;
     }
