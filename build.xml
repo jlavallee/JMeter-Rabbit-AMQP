@@ -10,22 +10,6 @@
     For more info:
       ant -projecthelp
 
-    Note that you need to have the following jars in lib/ to build JMeter-AMQP:
-
-       rabbitmq-client.jar    >= 2.6.1  (from http://www.rabbitmq.com)
-       ApacheJMeter_core.jar            (from jmeter-trunk)
-       commons-codec-1.4.jar            (also used by jmeter)
-       commons-collections-3.2.1.jar
-       commons-httpclient-3.1.jar
-       commons-io-1.4.jar
-       commons-jexl-1.1.jar
-       commons-lang-2.4.jar
-       commons-logging-1.1.1.jar
-       commons-net-1.4.1.jar
-       jorphan.jar
-       logkit-2.0.jar
-
-
   </description>
 
   <!-- Check the Ant version -->
