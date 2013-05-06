@@ -20,6 +20,14 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
+    public static int DEFAULT_PREFETCH_COUNT = 0; // unlimited
+    public static String DEFAULT_PREFETCH_COUNT_STRING = Integer.toString(DEFAULT_PREFETCH_COUNT);
+    private final static String PREFETCH_COUNT = "AMQPConsumer.PrefetchCount";
+
+    public static boolean DEFAULT_READ_RESPONSE = true;
+    private final static String READ_RESPONSE = "AMQPConsumer.ReadResponse";
+
+
     //++ These are JMX names, and must not be changed
     private final static String PURGE_QUEUE = "AMQPConsumer.PurgeQueue";
     private final static String AUTO_ACK = "AMQPConsumer.AutoAck";
@@ -41,19 +49,25 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         result.setSuccessful(false);
         result.setResponseCode("500");
 
-        QueueingConsumer consumer;
-        String consumerTag;
 
         trace("AMQPConsumer.sample()");
 
         try {
             initChannel();
-            
-            consumer = new QueueingConsumer(channel);
-            channel.basicQos(1); // TODO: make prefetchCount configurable?
-            consumerTag = channel.basicConsume(getQueue(), autoAck(), consumer);
         } catch (IOException ex) {
             log.error("Failed to initialize channel", ex);
+            result.setResponseMessage(ex.getMessage());
+            return result;
+        }
+
+        QueueingConsumer consumer = new QueueingConsumer(channel);
+        //channel.basicQos(1); // TODO: make prefetchCount configurable?
+        String consumerTag = null;
+        try {
+            consumerTag = channel.basicConsume(getQueue(), autoAck(), consumer);
+        } catch (IOException ex) {
+            log.error("Failed to consume from channel", ex);
+            result.setResponseMessage(ex.getMessage());
             return result;
         }
 
@@ -61,19 +75,31 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         /*
          * Perform the sampling
          */
+        int loop = getIterationsAsInt();
         result.sampleStart(); // Start timing
+        QueueingConsumer.Delivery delivery = null;
         try {
-            QueueingConsumer.Delivery delivery = consumer.nextDelivery(getReceiveTimeoutAsInt());
+            for (int idx = 0; idx < loop; idx++) {
+                delivery = consumer.nextDelivery(getReceiveTimeoutAsInt());
 
-            if(delivery == null){
-                log.warn("nextDelivery timed out");
-                return result;
+                if(delivery == null){
+                    log.warn("nextDelivery timed out");
+                    return result;
+                }
+
+                /*
+                 * Set up the sample result details
+                 */
+                if (getReadResponseAsBoolean()) {
+                    result.setSamplerData(new String(delivery.getBody()));
+                }
+                else {
+                    result.setSamplerData("Read response is false.");
+                }
+
+                if(!autoAck())
+                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
-
-            /*
-             * Set up the sample result details
-             */
-            result.setSamplerData(new String(delivery.getBody()));
 
             result.setResponseData("OK", null);
             result.setDataType(SampleResult.TEXT);
@@ -82,36 +108,35 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
             result.setResponseMessage("OK");
             result.setSuccessful(true);
 
-            if(!autoAck())
-                channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-
         } catch (ShutdownSignalException e) {
             log.warn("AMQP consumer failed to consume", e);
             result.setResponseCode("400");
-            result.setResponseMessage(e.toString());
+            result.setResponseMessage(e.getMessage());
             interrupt();
         } catch (ConsumerCancelledException e) {
             log.warn("AMQP consumer failed to consume", e);
             result.setResponseCode("300");
-            result.setResponseMessage(e.toString());
+            result.setResponseMessage(e.getMessage());
             interrupt();
         } catch (InterruptedException e) {
             log.info("interuppted while attempting to consume");
             result.setResponseCode("200");
-            result.setResponseMessage(e.toString());
+            result.setResponseMessage(e.getMessage());
         } catch (IOException e) {
             log.warn("AMQP consumer failed to consume", e);
             result.setResponseCode("100");
-            result.setResponseMessage(e.toString());
+            result.setResponseMessage(e.getMessage());
         } finally {
+            result.sampleEnd(); // End timimg
             try {
-                channel.basicCancel(consumerTag);
+                if (delivery != null) {
+                   channel.basicCancel(consumerTag);
+                }
             } catch(IOException e) {
-                log.error("Couldn't safely cancel the sample's consumer", e);
+                log.error("Couldn't safely cancel the sample " + consumerTag, e);
             }
         }
 
-        result.sampleEnd(); // End timimg
         trace("AMQPConsumer.sample ended");
 
         return result;
@@ -181,6 +206,47 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         setProperty(RECEIVE_TIMEOUT, s);
     }
 
+    public String getPrefetchCount() {
+        return getPropertyAsString(PREFETCH_COUNT, DEFAULT_PREFETCH_COUNT_STRING);
+    }
+
+    public void setPrefetchCount(String prefetchCount) {
+       setProperty(PREFETCH_COUNT, prefetchCount);
+    }
+
+    public int getPrefetchCountAsInt() {
+        return getPropertyAsInt(PREFETCH_COUNT);
+    }
+
+    /**
+     * set whether the sampler should read the response or not
+     *
+     * @param read whether the sampler should read the response or not
+     */
+    public void setReadResponse(Boolean read) {
+        setProperty(READ_RESPONSE, read);
+    }
+
+    /**
+     * return whether the sampler should read the response
+     *
+     * @return whether the sampler should read the response
+     */
+    public String getReadResponse() {
+        return getPropertyAsString(READ_RESPONSE);
+    }
+
+    /**
+     * return whether the sampler should read the response as a boolean value
+     *
+     * @return whether the sampler should read the response as a boolean value
+     */
+    public boolean getReadResponseAsBoolean() {
+        return getPropertyAsBoolean(READ_RESPONSE);
+    }
+
+
+
     @Override
     public boolean interrupt() {
         testEnded();
@@ -225,5 +291,11 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         String tn = Thread.currentThread().getName();
         String th = this.toString();
         log.debug(tn + " " + tl + " " + s + " " + th);
+    }
+
+    protected boolean initChannel() throws IOException {
+        boolean ret = super.initChannel();
+        channel.basicQos(getPrefetchCountAsInt());
+        return ret;
     }
 }

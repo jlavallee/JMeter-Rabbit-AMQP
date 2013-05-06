@@ -1,8 +1,7 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.testelement.ThreadListener;
@@ -25,12 +24,16 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     public static final int DEFAULT_TIMEOUT = 1000;
     public static final String DEFAULT_TIMEOUT_STRING = Integer.toString(DEFAULT_TIMEOUT);
 
+    public static final int DEFAULT_ITERATIONS = 1;
+    public static final String DEFAULT_ITERATIONS_STRING = Integer.toString(DEFAULT_ITERATIONS);
+
     private static final Logger log = LoggingManager.getLoggerForClass();
 
 
     //++ These are JMX names, and must not be changed
     protected static final String EXCHANGE = "AMQPSampler.Exchange";
     protected static final String EXCHANGE_TYPE = "AMQPSampler.ExchangeType";
+    protected static final String EXCHANGE_DURABLE = "AMQPSampler.ExchangeDurable";
     protected static final String QUEUE = "AMQPSampler.Queue";
     protected static final String ROUTING_KEY = "AMQPSampler.RoutingKey";
     protected static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost";
@@ -39,6 +42,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected static final String USERNAME = "AMQPSampler.Username";
     protected static final String PASSWORD = "AMQPSampler.Password";
     private static final String TIMEOUT = "AMQPSampler.Timeout";
+    private static final String ITERATIONS = "AMQPSampler.Iterations";
     private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
     private static final String QUEUE_DURABLE = "AMQPSampler.QueueDurable";
     private static final String QUEUE_EXCLUSIVE = "AMQPSampler.QueueExclusive";
@@ -51,6 +55,10 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected AMQPSampler(){
         factory = new ConnectionFactory();
         factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
+
+        setExhangeDurable("true");
+
+        System.out.println("Created :"+ getTitle() + " -- " +  this);
     }
 
     protected boolean initChannel() throws IOException {
@@ -63,6 +71,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
         
         if(channel == null) {
+            log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
             factory.setConnectionTimeout(getTimeoutAsInt());
             factory.setVirtualHost(getVirtualHost());
             factory.setHost(getHost());
@@ -83,16 +92,16 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
             connection = factory.newConnection();
             channel = connection.createChannel();
-            
+            channel.basicQos(0,0,false);
             if(!channel.isOpen()){
                 log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
             }
             setChannel(channel);
-            
+
             //TODO: Break out queue binding
             if(getQueue() != null && !getQueue().isEmpty()) {
                 channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
-            
+
                 if(!StringUtils.isBlank(getExchange())) { //Use a named exchange
                     channel.exchangeDeclare(getExchange(), getExchangeType(), true);
                     channel.queueBind(getQueue(), getExchange(), getRoutingKey());
@@ -151,6 +160,18 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         setProperty(TIMEOUT, s);
     }
 
+    public String getIterations() {
+        return getPropertyAsString(ITERATIONS, DEFAULT_ITERATIONS_STRING);
+    }
+
+    public void setIterations(String s) {
+        setProperty(ITERATIONS, s);
+    }
+
+    public int getIterationsAsInt() {
+        return getPropertyAsInt(ITERATIONS);
+    }
+
     public String getExchange() {
         return getPropertyAsString(EXCHANGE);
     }
@@ -168,6 +189,17 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         setProperty(EXCHANGE_TYPE, name);
     }
 
+    public String getExchangeDurable() {
+        return getPropertyAsString(EXCHANGE_DURABLE);
+    }
+
+    public void setExhangeDurable(String content) {
+        setProperty(EXCHANGE_DURABLE, content);
+    }
+
+    public boolean exchangeDurable() {
+        return getPropertyAsBoolean(EXCHANGE_DURABLE);
+    }
 
     public String getQueue() {
         return getPropertyAsString(QUEUE);
@@ -331,4 +363,5 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     public void threadStarted() {
 
     }
+
 }
