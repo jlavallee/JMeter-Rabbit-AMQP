@@ -3,6 +3,7 @@ package com.zeroclue.jmeter.protocol.amqp;
 import com.rabbitmq.client.AMQP;
 import java.io.IOException;
 
+import com.rabbitmq.client.MessageProperties;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
@@ -34,6 +35,14 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
     private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
 
+    public static boolean DEFAULT_USE_PUBLISHER_CONFIRMS = false;
+    //public static String DEFAULT_USE_PUBLISHER_CONFIRMS_STRING = Boolean.toString(DEFAULT_USE_PUBLISHER_CONFIRMS);
+    private final static String USE_PUBLISHER_CONFIRMS = "AMQPConsumer.UsePublisherConfirms";
+
+    public static boolean DEFAULT_PERSISTENT = false;
+    //public static String DEFAULT_PERSISTENT_STRING = Boolean.toString(DEFAULT_PERSISTENT);
+    private final static String PERSISTENT = "AMQPConsumer.Persistent";
+
     private transient Channel channel;
 
     public AMQPPublisher() {
@@ -63,9 +72,15 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         /*
          * Perform the sampling
          */
+
+        int loop = getIterationsAsInt();
         result.sampleStart(); // Start timing
         try {
-            channel.basicPublish(getExchange(), getMessageRoutingKey(), getProperties(), getMessageBytes());
+
+            for (int idx = 0; idx < loop; idx++) {
+                channel.basicPublish(getExchange(), getMessageRoutingKey(), getProperties(), getMessageBytes());
+            }
+
             /*
              * Set up the sample result details
              */
@@ -81,8 +96,9 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             result.setResponseCode("000");
             result.setResponseMessage(ex.toString());
         }
-
-        result.sampleEnd(); // End timimg
+        finally {
+            result.sampleEnd(); // End timimg
+        }
 
         return result;
     }
@@ -147,6 +163,24 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         setProperty(CORRELATION_ID, content);
     }
 
+
+    public Boolean getPersistent() {
+        return getPropertyAsBoolean(PERSISTENT, DEFAULT_PERSISTENT);
+    }
+
+    public void setPersistent(Boolean persistent) {
+       setProperty(PERSISTENT, persistent);
+    }
+
+    public Boolean getUsePublisherConfirms() {
+        return getPropertyAsBoolean(USE_PUBLISHER_CONFIRMS, DEFAULT_USE_PUBLISHER_CONFIRMS);
+    }
+
+    public void setUsePublisherConfirms(Boolean usePublisherConfirms) {
+       setProperty(USE_PUBLISHER_CONFIRMS, usePublisherConfirms);
+    }
+
+
     @Override
     public boolean interrupt() {
         cleanup();
@@ -166,15 +200,22 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     @Override
     protected AMQP.BasicProperties getProperties() {
         AMQP.BasicProperties parentProps = super.getProperties();
-        
-        AMQP.BasicProperties publishProperties = 
+
+        AMQP.BasicProperties publishProperties =
                 new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
-                parentProps.getHeaders(), parentProps.getDeliveryMode(), parentProps.getPriority(),
+                parentProps.getHeaders(), getPersistent() ? 2 : parentProps.getDeliveryMode(), parentProps.getPriority(),
                 getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
                 parentProps.getMessageId(), parentProps.getTimestamp(), getMessageType(),
                 parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
-        
+
         return publishProperties;
     }
 
+    protected boolean initChannel() throws IOException{
+        boolean ret = super.initChannel();
+        if (getUsePublisherConfirms()) {
+            channel.confirmSelect();
+        }
+        return ret;
+    }
 }

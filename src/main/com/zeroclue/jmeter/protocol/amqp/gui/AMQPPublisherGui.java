@@ -2,7 +2,7 @@ package com.zeroclue.jmeter.protocol.amqp.gui;
 
 import java.awt.Dimension;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.gui.JLabeledTextArea;
@@ -37,6 +37,9 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     private JLabeledTextField replyToQueue = new JLabeledTextField("Reply-To Queue");
     private JLabeledTextField correlationId = new JLabeledTextField("Correlation Id");
 
+    private JCheckBox persistent = new JCheckBox("Persistent?", AMQPPublisher.DEFAULT_PERSISTENT);
+    private JCheckBox usePublisherConfirms = new JCheckBox("Use Publisher Confirms?", AMQPPublisher.DEFAULT_USE_PUBLISHER_CONFIRMS);
+
     public AMQPPublisherGui(){
         init();
     }
@@ -62,6 +65,9 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         super.configure(element);
         if (!(element instanceof AMQPPublisher)) return;
         AMQPPublisher sampler = (AMQPPublisher) element;
+
+        persistent.setSelected(sampler.getPersistent());
+        usePublisherConfirms.setSelected(sampler.getUsePublisherConfirms());
 
         messageRoutingKey.setText(sampler.getMessageRoutingKey());
         messageType.setText(sampler.getMessageType());
@@ -91,6 +97,9 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
 
         super.modifyTestElement(sampler);
 
+        sampler.setPersistent(persistent.isSelected());
+        sampler.setUsePublisherConfirms(usePublisherConfirms.isSelected());
+
         sampler.setMessageRoutingKey(messageRoutingKey.getText());
         sampler.setMessage(message.getText());
         sampler.setMessageType(messageType.getText());
@@ -109,12 +118,16 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     @Override
     protected final void init() {
         super.init();
+        persistent.setPreferredSize(new Dimension(100, 25));
+        usePublisherConfirms.setPreferredSize(new Dimension(100, 25));
         messageRoutingKey.setPreferredSize(new Dimension(100, 25));
         messageType.setPreferredSize(new Dimension(100, 25));
         replyToQueue.setPreferredSize(new Dimension(100, 25));
         correlationId.setPreferredSize(new Dimension(100, 25));
         message.setPreferredSize(new Dimension(400, 150));
 
+        mainPanel.add(persistent);
+        mainPanel.add(usePublisherConfirms);
         mainPanel.add(messageRoutingKey);
         mainPanel.add(messageType);
         mainPanel.add(replyToQueue);
@@ -128,6 +141,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     @Override
     public void clearGui() {
         super.clearGui();
+        persistent.setSelected(AMQPPublisher.DEFAULT_PERSISTENT);
+        usePublisherConfirms.setSelected(AMQPPublisher.DEFAULT_USE_PUBLISHER_CONFIRMS);
         messageRoutingKey.setText("");
         messageType.setText("");
         replyToQueue.setText("");
