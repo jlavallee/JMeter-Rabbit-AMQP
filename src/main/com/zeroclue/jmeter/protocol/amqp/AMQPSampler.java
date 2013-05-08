@@ -18,6 +18,10 @@ import org.apache.commons.lang.StringUtils;
 
 public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
 
+    public static final boolean DEFAULT_EXCHANGE_DURABLE = true;
+    public static final boolean DEFAULT_EXCHANGE_REDECLARE = false;
+    public static final boolean DEFAULT_QUEUE_REDECLARE = false;
+
     public static final int DEFAULT_PORT = 5672;
     public static final String DEFAULT_PORT_STRING = Integer.toString(DEFAULT_PORT);
 
@@ -34,6 +38,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected static final String EXCHANGE = "AMQPSampler.Exchange";
     protected static final String EXCHANGE_TYPE = "AMQPSampler.ExchangeType";
     protected static final String EXCHANGE_DURABLE = "AMQPSampler.ExchangeDurable";
+    protected static final String EXCHANGE_REDECLARE = "AMQPSampler.ExchangeRedeclare";
     protected static final String QUEUE = "AMQPSampler.Queue";
     protected static final String ROUTING_KEY = "AMQPSampler.RoutingKey";
     protected static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost";
@@ -45,6 +50,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     private static final String ITERATIONS = "AMQPSampler.Iterations";
     private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
     private static final String QUEUE_DURABLE = "AMQPSampler.QueueDurable";
+    private static final String QUEUE_REDECLARE = "AMQPSampler.Redeclare";
     private static final String QUEUE_EXCLUSIVE = "AMQPSampler.QueueExclusive";
     private static final String QUEUE_AUTO_DELETE = "AMQPSampler.QueueAutoDelete";
     private static final int DEFAULT_HEARTBEAT = 1;
@@ -55,10 +61,6 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected AMQPSampler(){
         factory = new ConnectionFactory();
         factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
-
-        setExhangeDurable("true");
-
-        System.out.println("Created :"+ getTitle() + " -- " +  this);
     }
 
     protected boolean initChannel() throws IOException {
@@ -71,39 +73,27 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
         
         if(channel == null) {
-            log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
-            factory.setConnectionTimeout(getTimeoutAsInt());
-            factory.setVirtualHost(getVirtualHost());
-            factory.setHost(getHost());
-            factory.setPort(getPortAsInt());
-            factory.setUsername(getUsername());
-            factory.setPassword(getPassword());
-
-            log.info("RabbitMQ ConnectionFactory using:"
-                    +"\n\t virtual host: " + getVirtualHost()
-                    +"\n\t host: " + getHost()
-                    +"\n\t port: " + getPort()
-                    +"\n\t username: " + getUsername()
-                    +"\n\t password: " + getPassword()
-                    +"\n\t timeout: " + getTimeout()
-                    +"\n\t heartbeat: " + factory.getRequestedHeartbeat()
-                    +"\nin " + this
-                    );
-
-            connection = factory.newConnection();
-            channel = connection.createChannel();
-            channel.basicQos(0,0,false);
-            if(!channel.isOpen()){
-                log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
-            }
+            channel = createChannel();
             setChannel(channel);
 
             //TODO: Break out queue binding
-            if(getQueue() != null && !getQueue().isEmpty()) {
-                channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
+            boolean queueConfigured = (getQueue() != null && !getQueue().isEmpty());
 
-                if(!StringUtils.isBlank(getExchange())) { //Use a named exchange
-                    channel.exchangeDeclare(getExchange(), getExchangeType(), true);
+            if(queueConfigured) {
+                if (getQueueRedeclare()) {
+                    deleteQueue();
+                }
+
+                AMQP.Queue.DeclareOk declareQueueResp = channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
+            }
+
+            if(!StringUtils.isBlank(getExchange())) { //Use a named exchange
+                if (getExchangeRedeclare()) {
+                    deleteExchange();
+                }
+
+                AMQP.Exchange.DeclareOk declareExchangeResp = channel.exchangeDeclare(getExchange(), getExchangeType(), getExchangeDurable());
+                if (queueConfigured) {
                     channel.queueBind(getQueue(), getExchange(), getRoutingKey());
                 }
             }
@@ -189,16 +179,20 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         setProperty(EXCHANGE_TYPE, name);
     }
 
-    public String getExchangeDurable() {
-        return getPropertyAsString(EXCHANGE_DURABLE);
+    public Boolean getExchangeDurable() {
+        return getPropertyAsBoolean(EXCHANGE_DURABLE);
     }
 
-    public void setExhangeDurable(String content) {
+    public void setExchangeDurable(Boolean content) {
         setProperty(EXCHANGE_DURABLE, content);
     }
 
-    public boolean exchangeDurable() {
-        return getPropertyAsBoolean(EXCHANGE_DURABLE);
+    public Boolean getExchangeRedeclare() {
+        return getPropertyAsBoolean(EXCHANGE_REDECLARE);
+    }
+
+    public void setExchangeRedeclare(Boolean content) {
+        setProperty(EXCHANGE_REDECLARE, content);
     }
 
     public String getQueue() {
@@ -343,6 +337,15 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return getPropertyAsBoolean(QUEUE_AUTO_DELETE);
     }
 
+
+    public Boolean getQueueRedeclare() {
+        return getPropertyAsBoolean(QUEUE_REDECLARE);
+    }
+
+    public void setQueueRedeclare(Boolean content) {
+       setProperty(QUEUE_REDECLARE, content);
+    }
+
     protected void cleanup() {
         try {
             //getChannel().close();   // closing the connection will close the channel if it's still open
@@ -364,4 +367,68 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
     }
 
+    protected Channel createChannel() throws IOException {
+        log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
+         factory.setConnectionTimeout(getTimeoutAsInt());
+         factory.setVirtualHost(getVirtualHost());
+         factory.setHost(getHost());
+         factory.setPort(getPortAsInt());
+         factory.setUsername(getUsername());
+         factory.setPassword(getPassword());
+
+         log.info("RabbitMQ ConnectionFactory using:"
+                 +"\n\t virtual host: " + getVirtualHost()
+                 +"\n\t host: " + getHost()
+                 +"\n\t port: " + getPort()
+                 +"\n\t username: " + getUsername()
+                 +"\n\t password: " + getPassword()
+                 +"\n\t timeout: " + getTimeout()
+                 +"\n\t heartbeat: " + factory.getRequestedHeartbeat()
+                 +"\nin " + this
+                 );
+
+         if (connection == null || !connection.isOpen()) {
+             connection = factory.newConnection();
+         }
+
+         Channel channel = connection.createChannel();
+         if(!channel.isOpen()){
+             log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
+         }
+        return channel;
+    }
+
+    protected void deleteQueue() throws IOException {
+        Channel channel = createChannel();
+        try {
+            log.info("Deleting queue " + getQueue());
+            channel.queueDelete(getQueue());
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+            // ignore it.
+        }
+        finally {
+            if (channel.isOpen())  {
+                channel.close();
+            }
+        }
+    }
+
+    protected void deleteExchange() throws IOException {
+        Channel channel = createChannel();
+        try {
+            log.info("Deleting exchange " + getExchange());
+            channel.exchangeDelete(getExchange());
+        }
+        catch(Exception ex) {
+            ex.printStackTrace();
+            // ignore it.
+        }
+        finally {
+            if (channel.isOpen())  {
+                channel.close();
+            }
+        }
+    }
 }
