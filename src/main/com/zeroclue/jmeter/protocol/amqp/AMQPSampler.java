@@ -369,26 +369,27 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
     protected Channel createChannel() throws IOException {
         log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
-         factory.setConnectionTimeout(getTimeoutAsInt());
-         factory.setVirtualHost(getVirtualHost());
-         factory.setHost(getHost());
-         factory.setPort(getPortAsInt());
-         factory.setUsername(getUsername());
-         factory.setPassword(getPassword());
-
-         log.info("RabbitMQ ConnectionFactory using:"
-                 +"\n\t virtual host: " + getVirtualHost()
-                 +"\n\t host: " + getHost()
-                 +"\n\t port: " + getPort()
-                 +"\n\t username: " + getUsername()
-                 +"\n\t password: " + getPassword()
-                 +"\n\t timeout: " + getTimeout()
-                 +"\n\t heartbeat: " + factory.getRequestedHeartbeat()
-                 +"\nin " + this
-                 );
 
          if (connection == null || !connection.isOpen()) {
-             connection = factory.newConnection();
+            factory.setConnectionTimeout(getTimeoutAsInt());
+            factory.setVirtualHost(getVirtualHost());
+            factory.setHost(getHost());
+            factory.setPort(getPortAsInt());
+            factory.setUsername(getUsername());
+            factory.setPassword(getPassword());
+
+            log.info("RabbitMQ ConnectionFactory using:"
+                  +"\n\t virtual host: " + getVirtualHost()
+                  +"\n\t host: " + getHost()
+                  +"\n\t port: " + getPort()
+                  +"\n\t username: " + getUsername()
+                  +"\n\t password: " + getPassword()
+                  +"\n\t timeout: " + getTimeout()
+                  +"\n\t heartbeat: " + factory.getRequestedHeartbeat()
+                  +"\nin " + this
+                  );
+
+            connection = factory.newConnection();
          }
 
          Channel channel = connection.createChannel();
@@ -399,13 +400,14 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     }
 
     protected void deleteQueue() throws IOException {
+        // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {
             log.info("Deleting queue " + getQueue());
             channel.queueDelete(getQueue());
         }
         catch(Exception ex) {
-            ex.printStackTrace();
+            log.debug(ex.toString(), ex);
             // ignore it.
         }
         finally {
@@ -416,13 +418,14 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     }
 
     protected void deleteExchange() throws IOException {
+        // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {
             log.info("Deleting exchange " + getExchange());
             channel.exchangeDelete(getExchange());
         }
         catch(Exception ex) {
-            ex.printStackTrace();
+            log.debug(ex.toString(), ex);
             // ignore it.
         }
         finally {
