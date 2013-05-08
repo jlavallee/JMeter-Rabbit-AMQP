@@ -74,6 +74,8 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         /*
          * Perform the sampling
          */
+
+        // aggregate samples.
         int loop = getIterationsAsInt();
         result.sampleStart(); // Start timing
         QueueingConsumer.Delivery delivery = null;

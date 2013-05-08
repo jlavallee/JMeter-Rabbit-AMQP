@@ -3,6 +3,7 @@ package com.zeroclue.jmeter.protocol.amqp;
 import com.rabbitmq.client.AMQP;
 import java.io.IOException;
 
+import com.rabbitmq.client.MessageProperties;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
@@ -37,6 +38,9 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     public static boolean DEFAULT_PERSISTENT = false;
     private final static String PERSISTENT = "AMQPConsumer.Persistent";
 
+    public static boolean DEFAULT_USE_TX = false;
+    private final static String USE_TX = "AMQPConsumer.UseTx";
+
     private transient Channel channel;
 
     public AMQPPublisher() {
@@ -68,22 +72,25 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
          * Perform the sampling
          */
 
+        // aggregate samples.
         int loop = getIterationsAsInt();
         result.sampleStart(); // Start timing
         try {
+            AMQP.BasicProperties messageProperties = getProperties();
+            byte[] messageBytes = getMessageBytes();
 
             for (int idx = 0; idx < loop; idx++) {
                 // try to force jms semantics.
                 // but this does not work since RabbitMQ does not sync to disk if consumers are connected as
                 // seen by iostat -cd 1. TPS value remains at 0.
 
-                //if (getPersistent()) {
-                //    channel.txSelect();
-                //}
-                channel.basicPublish(getExchange(), getMessageRoutingKey(), getProperties(), getMessageBytes());
-                //if (getPersistent()) {
-                //    channel.txCommit();
-                //}
+                channel.basicPublish(getExchange(), getMessageRoutingKey(), messageProperties, messageBytes);
+
+            }
+
+            // commit the sample.
+            if (getUseTx()) {
+                channel.txCommit();
             }
 
             /*
@@ -177,6 +184,14 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
        setProperty(PERSISTENT, persistent);
     }
 
+    public Boolean getUseTx() {
+        return getPropertyAsBoolean(USE_TX, DEFAULT_USE_TX);
+    }
+
+    public void setUseTx(Boolean tx) {
+       setProperty(USE_TX, tx);
+    }
+
     @Override
     public boolean interrupt() {
         cleanup();
@@ -197,9 +212,11 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     protected AMQP.BasicProperties getProperties() {
         AMQP.BasicProperties parentProps = super.getProperties();
 
+        int deliveryMode = getPersistent() ? 2 : 1;
+
         AMQP.BasicProperties publishProperties =
                 new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
-                parentProps.getHeaders(), getPersistent() ? 2 : parentProps.getDeliveryMode(), parentProps.getPriority(),
+                parentProps.getHeaders(), deliveryMode, parentProps.getPriority(),
                 getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
                 parentProps.getMessageId(), parentProps.getTimestamp(), getMessageType(),
                 parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
@@ -209,6 +226,9 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     protected boolean initChannel() throws IOException{
         boolean ret = super.initChannel();
+        if (getUseTx()) {
+            channel.txSelect();
+        }
         return ret;
     }
 }
