@@ -3,7 +3,6 @@ package com.zeroclue.jmeter.protocol.amqp;
 import com.rabbitmq.client.AMQP;
 import java.io.IOException;
 
-import com.rabbitmq.client.MessageProperties;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
@@ -35,12 +34,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
     private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
 
-    public static boolean DEFAULT_USE_PUBLISHER_CONFIRMS = false;
-    //public static String DEFAULT_USE_PUBLISHER_CONFIRMS_STRING = Boolean.toString(DEFAULT_USE_PUBLISHER_CONFIRMS);
-    private final static String USE_PUBLISHER_CONFIRMS = "AMQPConsumer.UsePublisherConfirms";
-
     public static boolean DEFAULT_PERSISTENT = false;
-    //public static String DEFAULT_PERSISTENT_STRING = Boolean.toString(DEFAULT_PERSISTENT);
     private final static String PERSISTENT = "AMQPConsumer.Persistent";
 
     private transient Channel channel;
@@ -61,8 +55,9 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
         try {
             initChannel();
-        } catch (IOException ex) {
-            log.error("Failed to initialize channel", ex);
+        } catch (Exception ex) {
+            log.error("Failed to initialize channel : ", ex);
+            result.setResponseMessage(ex.toString());
             return result;
         }
 
@@ -78,7 +73,17 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         try {
 
             for (int idx = 0; idx < loop; idx++) {
+                // try to force jms semantics.
+                // but this does not work since RabbitMQ does not sync to disk if consumers are connected as
+                // seen by iostat -cd 1. TPS value remains at 0.
+
+                //if (getPersistent()) {
+                //    channel.txSelect();
+                //}
                 channel.basicPublish(getExchange(), getMessageRoutingKey(), getProperties(), getMessageBytes());
+                //if (getPersistent()) {
+                //    channel.txCommit();
+                //}
             }
 
             /*
@@ -92,7 +97,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             result.setResponseMessage("OK");
             result.setSuccessful(true);
         } catch (Exception ex) {
-            log.debug("", ex);
+            log.debug(ex.getMessage(), ex);
             result.setResponseCode("000");
             result.setResponseMessage(ex.toString());
         }
@@ -172,15 +177,6 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
        setProperty(PERSISTENT, persistent);
     }
 
-    public Boolean getUsePublisherConfirms() {
-        return getPropertyAsBoolean(USE_PUBLISHER_CONFIRMS, DEFAULT_USE_PUBLISHER_CONFIRMS);
-    }
-
-    public void setUsePublisherConfirms(Boolean usePublisherConfirms) {
-       setProperty(USE_PUBLISHER_CONFIRMS, usePublisherConfirms);
-    }
-
-
     @Override
     public boolean interrupt() {
         cleanup();
@@ -213,9 +209,6 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     protected boolean initChannel() throws IOException{
         boolean ret = super.initChannel();
-        if (getUsePublisherConfirms()) {
-            channel.confirmSelect();
-        }
         return ret;
     }
 }
