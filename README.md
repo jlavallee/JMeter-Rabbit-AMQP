@@ -7,7 +7,7 @@ A [JMeter](http://jmeter.apache.org/) plugin to publish & consume messages from 
 JMeter Runtime Dependencies
 ---------------------------
 
-Prior to building or installing this JMeter plugin, ensure that the RabbitMQ client library (rabbitmq-client.jar) is installed in JMeter's lib/ directory.
+Prior to building or installing this JMeter plugin, ensure that the RabbitMQ client library (amqp-client-3.x.x.jar) is installed in JMeter's lib/ directory.
 
 
 Build Dependencies
