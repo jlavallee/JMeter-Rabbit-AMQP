@@ -15,28 +15,25 @@ import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
 
 public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStateListener {
+    private static final int DEFAULT_PREFETCH_COUNT = 0; // unlimited
+
+    public static final boolean DEFAULT_READ_RESPONSE = true;
+    public static final String DEFAULT_PREFETCH_COUNT_STRING = Integer.toString(DEFAULT_PREFETCH_COUNT);
 
     private static final long serialVersionUID = 7480863561320459091L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
-    public static int DEFAULT_PREFETCH_COUNT = 0; // unlimited
-    public static String DEFAULT_PREFETCH_COUNT_STRING = Integer.toString(DEFAULT_PREFETCH_COUNT);
-    private final static String PREFETCH_COUNT = "AMQPConsumer.PrefetchCount";
-
-    public static boolean DEFAULT_READ_RESPONSE = true;
-    private final static String READ_RESPONSE = "AMQPConsumer.ReadResponse";
-
-
     //++ These are JMX names, and must not be changed
-    private final static String PURGE_QUEUE = "AMQPConsumer.PurgeQueue";
-    private final static String AUTO_ACK = "AMQPConsumer.AutoAck";
-    private final static String RECEIVE_TIMEOUT = "AMQPConsumer.ReceiveTimeout";
+    private static final String PREFETCH_COUNT = "AMQPConsumer.PrefetchCount";
+    private static final String READ_RESPONSE = "AMQPConsumer.ReadResponse";
+    private static final String PURGE_QUEUE = "AMQPConsumer.PurgeQueue";
+    private static final String AUTO_ACK = "AMQPConsumer.AutoAck";
+    private static final String RECEIVE_TIMEOUT = "AMQPConsumer.ReceiveTimeout";
 
     private transient Channel channel;
-
-    private QueueingConsumer consumer;
-    private String consumerTag;
+    private transient QueueingConsumer consumer;
+    private transient String consumerTag;
 
     public AMQPConsumer(){
         super();
