@@ -2,6 +2,7 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import com.rabbitmq.client.AMQP;
 import java.io.IOException;
+import java.security.*;
 
 import com.rabbitmq.client.MessageProperties;
 import org.apache.jmeter.samplers.Entry;
@@ -224,7 +225,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         return publishProperties;
     }
 
-    protected boolean initChannel() throws IOException{
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         boolean ret = super.initChannel();
         if (getUseTx()) {
             channel.txSelect();

@@ -2,6 +2,7 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
 import java.util.*;
+import java.security.*;
 
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.testelement.ThreadListener;
@@ -44,6 +45,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost";
     protected static final String HOST = "AMQPSampler.Host";
     protected static final String PORT = "AMQPSampler.Port";
+    protected static final String SSL = "AMQPSampler.SSL";
     protected static final String USERNAME = "AMQPSampler.Username";
     protected static final String PASSWORD = "AMQPSampler.Password";
     private static final String TIMEOUT = "AMQPSampler.Timeout";
@@ -63,7 +65,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
     }
 
-    protected boolean initChannel() throws IOException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         Channel channel = getChannel();
 
         if(channel != null && !channel.isOpen()){
@@ -261,6 +263,17 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return getPropertyAsInt(PORT);
     }
 
+    public void setConnectionSSL(String content) {
+        setProperty(SSL, content);
+    }
+
+    public void setConnectionSSL(Boolean value) {
+        setProperty(SSL, value.toString());
+    }
+
+    public boolean connectionSSL() {
+        return getPropertyAsBoolean(SSL);
+    }
 
 
     public String getUsername() {
@@ -367,7 +380,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
     }
 
-    protected Channel createChannel() throws IOException {
+    protected Channel createChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
 
          if (connection == null || !connection.isOpen()) {
@@ -377,6 +390,9 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
             factory.setPort(getPortAsInt());
             factory.setUsername(getUsername());
             factory.setPassword(getPassword());
+            if (connectionSSL()) {
+                factory.useSslProtocol("TLS");
+            }
 
             log.info("RabbitMQ ConnectionFactory using:"
                   +"\n\t virtual host: " + getVirtualHost()
@@ -399,7 +415,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return channel;
     }
 
-    protected void deleteQueue() throws IOException {
+    protected void deleteQueue() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {
@@ -417,7 +433,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
     }
 
-    protected void deleteExchange() throws IOException {
+    protected void deleteExchange() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {
