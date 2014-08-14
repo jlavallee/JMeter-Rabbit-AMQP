@@ -4,18 +4,14 @@ import java.io.IOException;
 import java.util.*;
 import java.security.*;
 
+import com.rabbitmq.client.*;
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.testelement.ThreadListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.BasicProperties;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.MessageProperties;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
 
@@ -73,7 +69,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
                     + " closed unexpectedly: ", channel.getCloseReason());
             channel = null; // so we re-open it below
         }
-        
+
         if(channel == null) {
             channel = createChannel();
             setChannel(channel);
@@ -386,8 +382,6 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
          if (connection == null || !connection.isOpen()) {
             factory.setConnectionTimeout(getTimeoutAsInt());
             factory.setVirtualHost(getVirtualHost());
-            factory.setHost(getHost());
-            factory.setPort(getPortAsInt());
             factory.setUsername(getUsername());
             factory.setPassword(getPassword());
             if (connectionSSL()) {
@@ -405,7 +399,13 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
                   +"\nin " + this
                   );
 
-            connection = factory.newConnection();
+            String[] hosts = getHost().split(",");
+            Address[] addresses = new Address[hosts.length];
+            for (int i = 0; i < hosts.length; i++) {
+                addresses[i] = new Address(hosts[i], getPortAsInt());
+            }
+            log.info("Using hosts: " + Arrays.toString(hosts) + " addresses: " + Arrays.toString(addresses));
+            connection = factory.newConnection(addresses);
          }
 
          Channel channel = connection.createChannel();
