@@ -5,7 +5,7 @@
     <conf name="runtime" extends="build" description="Libraries that need to be included with project jar" />
     </configurations>
     <dependencies>
-        <dependency org="commons-lang" name="commons-lang" rev="2.4" conf="build->default"/>
+        <dependency org="org.apache.commons" name="commons-lang3" rev="3.0" conf="build->default"/>
         <dependency org="commons-io" name="commons-io" rev="1.4" conf="build->default"/>
         <dependency org="commons-jexl" name="commons-jexl" rev="1.1" conf="build->default"/>
         <dependency org="commons-codec" name="commons-codec" rev="1.4" conf="build->default"/>
@@ -15,7 +15,7 @@
         <dependency org="commons-net" name="commons-net" rev="1.4.1" conf="build->default"/>
         <dependency org="org.apache.jmeter" name="jorphan" rev="2.6" conf="build->default"/>
         <dependency org="avalon-logkit" name="avalon-logkit" rev="2.0" conf="build->default"/>
-        <dependency org="com.rabbitmq" name="amqp-client" rev="3.0.4" conf="build->default"/>
-        <dependency org="org.apache.jmeter" name="ApacheJMeter_core" rev="2.9" conf="build->default"/>       
+        <dependency org="com.rabbitmq" name="amqp-client" rev="3.3.4" conf="build->default"/>
+        <dependency org="org.apache.jmeter" name="ApacheJMeter_core" rev="2.11" conf="build->default"/>
     </dependencies>
 </ivy-module>

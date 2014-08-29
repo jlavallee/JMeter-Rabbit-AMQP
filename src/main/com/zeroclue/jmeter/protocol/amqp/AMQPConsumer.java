@@ -57,9 +57,11 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
 
            // only do this once per thread. Otherwise it slows down the consumption by appx 50%
             if (consumer == null) {
+                log.info("Creating consumer");
                 consumer = new QueueingConsumer(channel);
             }
             if (consumerTag == null) {
+                log.info("Starting basic consumer");
                 consumerTag = channel.basicConsume(getQueue(), autoAck(), consumer);
             }
         } catch (Exception ex) {
@@ -90,7 +92,9 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
                  * Set up the sample result details
                  */
                 if (getReadResponseAsBoolean()) {
-                    result.setSamplerData(new String(delivery.getBody()));
+                    String response = new String(delivery.getBody());
+                    result.setSamplerData(response);
+                    result.setResponseMessage(response);
                 }
                 else {
                     result.setSamplerData("Read response is false.");
@@ -104,24 +108,32 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
             result.setDataType(SampleResult.TEXT);
 
             result.setResponseCodeOK();
-            result.setResponseMessage("OK");
+
             result.setSuccessful(true);
 
         } catch (ShutdownSignalException e) {
+            consumer = null;
+            consumerTag = null;
             log.warn("AMQP consumer failed to consume", e);
             result.setResponseCode("400");
             result.setResponseMessage(e.getMessage());
             interrupt();
         } catch (ConsumerCancelledException e) {
+            consumer = null;
+            consumerTag = null;
             log.warn("AMQP consumer failed to consume", e);
             result.setResponseCode("300");
             result.setResponseMessage(e.getMessage());
             interrupt();
         } catch (InterruptedException e) {
+            consumer = null;
+            consumerTag = null;
             log.info("interuppted while attempting to consume");
             result.setResponseCode("200");
             result.setResponseMessage(e.getMessage());
         } catch (IOException e) {
+            consumer = null;
+            consumerTag = null;
             log.warn("AMQP consumer failed to consume", e);
             result.setResponseCode("100");
             result.setResponseMessage(e.getMessage());
