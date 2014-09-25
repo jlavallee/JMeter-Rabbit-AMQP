@@ -3,11 +3,14 @@ package com.zeroclue.jmeter.protocol.amqp;
 import com.rabbitmq.client.AMQP;
 import java.io.IOException;
 import java.security.*;
+import java.util.*;
 
 import com.rabbitmq.client.MessageProperties;
+import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
+import org.apache.jmeter.testelement.property.TestElementProperty;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
@@ -35,6 +38,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private final static String MESSAGE_TYPE = "AMQPPublisher.MessageType";
     private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
     private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
+    private final static String HEADERS = "AMQPPublisher.Headers";
 
     public static boolean DEFAULT_PERSISTENT = false;
     private final static String PERSISTENT = "AMQPConsumer.Persistent";
@@ -78,6 +82,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         result.sampleStart(); // Start timing
         try {
             AMQP.BasicProperties messageProperties = getProperties();
+            messageProperties.setHeaders(prepareHeaders());
             byte[] messageBytes = getMessageBytes();
 
             for (int idx = 0; idx < loop; idx++) {
@@ -176,6 +181,13 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         setProperty(CORRELATION_ID, content);
     }
 
+    public Arguments getHeaders() {
+        return (Arguments) getProperty(HEADERS).getObjectValue();
+    }
+
+    public void setHeaders(Arguments headers) {
+        setProperty(new TestElementProperty(HEADERS, headers));
+    }
 
     public Boolean getPersistent() {
         return getPropertyAsBoolean(PERSISTENT, DEFAULT_PERSISTENT);
@@ -231,5 +243,14 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             channel.txSelect();
         }
         return ret;
+    }
+
+    private Map<String, Object> prepareHeaders() {
+        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, String> source = getHeaders().getArgumentsAsMap();
+        for (Map.Entry<String, String> item : source.entrySet()) {
+            result.put(item.getKey(), item.getValue());
+        }
+        return result;
     }
 }

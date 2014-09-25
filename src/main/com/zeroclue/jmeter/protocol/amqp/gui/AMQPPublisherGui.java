@@ -4,6 +4,8 @@ import java.awt.Dimension;
 
 import javax.swing.*;
 
+import org.apache.jmeter.config.Arguments;
+import org.apache.jmeter.config.gui.ArgumentsPanel;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.gui.JLabeledTextArea;
 import org.apache.jorphan.gui.JLabeledTextField;
@@ -40,6 +42,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     private JCheckBox persistent = new JCheckBox("Persistent?", AMQPPublisher.DEFAULT_PERSISTENT);
     private JCheckBox useTx = new JCheckBox("Use Transactions?", AMQPPublisher.DEFAULT_USE_TX);
 
+    private ArgumentsPanel headers = new ArgumentsPanel("Headers");
+
     public AMQPPublisherGui(){
         init();
     }
@@ -74,6 +78,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         replyToQueue.setText(sampler.getReplyToQueue());
         correlationId.setText(sampler.getCorrelationId());
         message.setText(sampler.getMessage());
+        configureHeaders(sampler);
     }
 
     /**
@@ -105,6 +110,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         sampler.setMessageType(messageType.getText());
         sampler.setReplyToQueue(replyToQueue.getText());
         sampler.setCorrelationId(correlationId.getText());
+        sampler.setHeaders((Arguments) headers.createTestElement());
     }
 
     @Override
@@ -132,6 +138,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         mainPanel.add(messageType);
         mainPanel.add(replyToQueue);
         mainPanel.add(correlationId);
+        mainPanel.add(headers);
         mainPanel.add(message);
     }
 
@@ -147,6 +154,17 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         messageType.setText("");
         replyToQueue.setText("");
         correlationId.setText("");
+        headers.clearGui();
         message.setText("");
+    }
+
+    private void configureHeaders(AMQPPublisher sampler)
+    {
+        Arguments sampleHeaders = sampler.getHeaders();
+        if (sampleHeaders != null) {
+            headers.configure(sampleHeaders);
+        } else {
+            headers.clearGui();
+        }
     }
 }
