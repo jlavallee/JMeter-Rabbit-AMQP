@@ -1,27 +1,32 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.security.*;
 
+import com.rabbitmq.client.*;
 import org.apache.jmeter.samplers.AbstractSampler;
+import org.apache.jmeter.testelement.ThreadListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.AMQP.BasicProperties;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.MessageProperties;
+import org.apache.commons.lang3.StringUtils;
 
-public abstract class AMQPSampler extends AbstractSampler {
+public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
+
+    public static final boolean DEFAULT_EXCHANGE_DURABLE = true;
+    public static final boolean DEFAULT_EXCHANGE_REDECLARE = false;
+    public static final boolean DEFAULT_QUEUE_REDECLARE = false;
 
     public static final int DEFAULT_PORT = 5672;
     public static final String DEFAULT_PORT_STRING = Integer.toString(DEFAULT_PORT);
 
     public static final int DEFAULT_TIMEOUT = 1000;
     public static final String DEFAULT_TIMEOUT_STRING = Integer.toString(DEFAULT_TIMEOUT);
+
+    public static final int DEFAULT_ITERATIONS = 1;
+    public static final String DEFAULT_ITERATIONS_STRING = Integer.toString(DEFAULT_ITERATIONS);
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
@@ -30,60 +35,67 @@ public abstract class AMQPSampler extends AbstractSampler {
     protected static final String EXCHANGE = "AMQPSampler.Exchange";
     protected static final String EXCHANGE_TYPE = "AMQPSampler.ExchangeType";
     protected static final String EXCHANGE_DURABLE = "AMQPSampler.ExchangeDurable";
+    protected static final String EXCHANGE_REDECLARE = "AMQPSampler.ExchangeRedeclare";
     protected static final String QUEUE = "AMQPSampler.Queue";
     protected static final String ROUTING_KEY = "AMQPSampler.RoutingKey";
     protected static final String VIRUTAL_HOST = "AMQPSampler.VirtualHost";
     protected static final String HOST = "AMQPSampler.Host";
     protected static final String PORT = "AMQPSampler.Port";
+    protected static final String SSL = "AMQPSampler.SSL";
     protected static final String USERNAME = "AMQPSampler.Username";
     protected static final String PASSWORD = "AMQPSampler.Password";
     private static final String TIMEOUT = "AMQPSampler.Timeout";
+    private static final String ITERATIONS = "AMQPSampler.Iterations";
     private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
     private static final String MESSAGE_EXPIRES = "AMQPSampler.MessageExpires";
     private static final String QUEUE_DURABLE = "AMQPSampler.QueueDurable";
+    private static final String QUEUE_REDECLARE = "AMQPSampler.Redeclare";
     private static final String QUEUE_EXCLUSIVE = "AMQPSampler.QueueExclusive";
     private static final String QUEUE_AUTO_DELETE = "AMQPSampler.QueueAutoDelete";
+    private static final int DEFAULT_HEARTBEAT = 1;
 
     private transient ConnectionFactory factory;
     private transient Connection connection;
 
     protected AMQPSampler(){
         factory = new ConnectionFactory();
+        factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
     }
 
-    protected boolean initChannel() throws IOException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         Channel channel = getChannel();
-        if(channel != null && channel.isOpen()){
-            return false;
-        }
+
         if(channel != null && !channel.isOpen()){
             log.warn("channel " + channel.getChannelNumber()
                     + " closed unexpectedly: ", channel.getCloseReason());
+            channel = null; // so we re-open it below
         }
-        factory.setConnectionTimeout(getTimeoutAsInt());
-        factory.setVirtualHost(getVirtualHost());
-        factory.setHost(getHost());
-        factory.setPort(getPortAsInt());
-        factory.setUsername(getUsername());
-        factory.setPassword(getPassword());
 
-        log.info("RabbitMQ ConnectionFactory using:"
-                +"\n\t virtual host: " + getVirtualHost()
-                +"\n\t host: " + getHost()
-                +"\n\t port: " + getPort()
-                +"\n\t username: " + getUsername()
-                +"\n\t password: " + getPassword()
-                +"\n\t timeout: " + getTimeout()
-                +"\nin " + this
-                );
+        if(channel == null) {
+            channel = createChannel();
+            setChannel(channel);
 
-        connection = factory.newConnection();
-        channel = connection.createChannel();
-        channel.exchangeDeclare(getExchange(), getExchangeType(), getExchangeDurable());
-        if(getQueue() != null && !getQueue().isEmpty()){
-            channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
-            channel.queueBind(getQueue(), getExchange(), getRoutingKey());
-        }
+            //TODO: Break out queue binding
+            boolean queueConfigured = (getQueue() != null && !getQueue().isEmpty());
+
+            if(queueConfigured) {
+                if (getQueueRedeclare()) {
+                    deleteQueue();
+                }
+
+                AMQP.Queue.DeclareOk declareQueueResp = channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), getQueueArguments());
+            }
+
+            if(!StringUtils.isBlank(getExchange())) { //Use a named exchange
+                if (getExchangeRedeclare()) {
+                    deleteExchange();
+                }
+
+                AMQP.Exchange.DeclareOk declareExchangeResp = channel.exchangeDeclare(getExchange(), getExchangeType(), getExchangeDurable());
+                if (queueConfigured) {
+                    channel.queueBind(getQueue(), getExchange(), getRoutingKey());
+                }
+            }
 
         log.info("bound to:"
                 +"\n\t queue: " + getQueue()
@@ -93,11 +105,7 @@ public abstract class AMQPSampler extends AbstractSampler {
                 +"\n\t arguments: " + getQueueArguments()
                 );
 
-
-        if(!channel.isOpen()){
-            log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
         }
-        setChannel(channel);
         return true;
     }
 
@@ -129,29 +137,6 @@ public abstract class AMQPSampler extends AbstractSampler {
         return this.getName();
     }
 
-    /**
-     * the implementation calls testEnded() without any parameters.
-     */
-    public void testEnded(String host) {
-        testEnded();
-    }
-
-    /**
-     * endTest cleans up the client
-     *
-     * @see junit.framework.TestListener#endTest(junit.framework.Test)
-     */
-    public void testEnded() {
-        log.info("AMQPSampler.testEnded called");
-        try {
-            //getChannel().close();   // closing the connection will close the channel if it's still open
-            if(connection.isOpen())
-                connection.close();
-        } catch (IOException e) {
-            log.error("Failed to close connection", e);
-        }
-    }
-
     protected int getTimeoutAsInt() {
         if (getPropertyAsInt(TIMEOUT) < 1) {
             return DEFAULT_TIMEOUT;
@@ -166,6 +151,18 @@ public abstract class AMQPSampler extends AbstractSampler {
 
     public void setTimeout(String s) {
         setProperty(TIMEOUT, s);
+    }
+
+    public String getIterations() {
+        return getPropertyAsString(ITERATIONS, DEFAULT_ITERATIONS_STRING);
+    }
+
+    public void setIterations(String s) {
+        setProperty(ITERATIONS, s);
+    }
+
+    public int getIterationsAsInt() {
+        return getPropertyAsInt(ITERATIONS);
     }
 
     public String getExchange() {
@@ -194,6 +191,14 @@ public abstract class AMQPSampler extends AbstractSampler {
         setProperty(EXCHANGE_TYPE, name);
     }
 
+
+    public Boolean getExchangeRedeclare() {
+        return getPropertyAsBoolean(EXCHANGE_REDECLARE);
+    }
+
+    public void setExchangeRedeclare(Boolean content) {
+        setProperty(EXCHANGE_REDECLARE, content);
+    }
 
     public String getQueue() {
         return getPropertyAsString(QUEUE);
@@ -278,6 +283,17 @@ public abstract class AMQPSampler extends AbstractSampler {
         return getPropertyAsInt(PORT);
     }
 
+    public void setConnectionSSL(String content) {
+        setProperty(SSL, content);
+    }
+
+    public void setConnectionSSL(Boolean value) {
+        setProperty(SSL, value.toString());
+    }
+
+    public boolean connectionSSL() {
+        return getPropertyAsBoolean(SSL);
+    }
 
 
     public String getUsername() {
@@ -352,5 +368,110 @@ public abstract class AMQPSampler extends AbstractSampler {
 
     public boolean queueAutoDelete(){
         return getPropertyAsBoolean(QUEUE_AUTO_DELETE);
+    }
+
+
+    public Boolean getQueueRedeclare() {
+        return getPropertyAsBoolean(QUEUE_REDECLARE);
+    }
+
+    public void setQueueRedeclare(Boolean content) {
+       setProperty(QUEUE_REDECLARE, content);
+    }
+
+    protected void cleanup() {
+        try {
+            //getChannel().close();   // closing the connection will close the channel if it's still open
+            if(connection != null && connection.isOpen())
+                connection.close();
+        } catch (IOException e) {
+            log.error("Failed to close connection", e);
+        }
+    }
+
+    @Override
+    public void threadFinished() {
+        log.info("AMQPSampler.threadFinished called");
+        cleanup();
+    }
+
+    @Override
+    public void threadStarted() {
+
+    }
+
+    protected Channel createChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
+
+         if (connection == null || !connection.isOpen()) {
+            factory.setConnectionTimeout(getTimeoutAsInt());
+            factory.setVirtualHost(getVirtualHost());
+            factory.setUsername(getUsername());
+            factory.setPassword(getPassword());
+            if (connectionSSL()) {
+                factory.useSslProtocol("TLS");
+            }
+
+            log.info("RabbitMQ ConnectionFactory using:"
+                  +"\n\t virtual host: " + getVirtualHost()
+                  +"\n\t host: " + getHost()
+                  +"\n\t port: " + getPort()
+                  +"\n\t username: " + getUsername()
+                  +"\n\t password: " + getPassword()
+                  +"\n\t timeout: " + getTimeout()
+                  +"\n\t heartbeat: " + factory.getRequestedHeartbeat()
+                  +"\nin " + this
+                  );
+
+            String[] hosts = getHost().split(",");
+            Address[] addresses = new Address[hosts.length];
+            for (int i = 0; i < hosts.length; i++) {
+                addresses[i] = new Address(hosts[i], getPortAsInt());
+            }
+            log.info("Using hosts: " + Arrays.toString(hosts) + " addresses: " + Arrays.toString(addresses));
+            connection = factory.newConnection(addresses);
+         }
+
+         Channel channel = connection.createChannel();
+         if(!channel.isOpen()){
+             log.fatalError("Failed to open channel: " + channel.getCloseReason().getLocalizedMessage());
+         }
+        return channel;
+    }
+
+    protected void deleteQueue() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        // use a different channel since channel closes on exception.
+        Channel channel = createChannel();
+        try {
+            log.info("Deleting queue " + getQueue());
+            channel.queueDelete(getQueue());
+        }
+        catch(Exception ex) {
+            log.debug(ex.toString(), ex);
+            // ignore it.
+        }
+        finally {
+            if (channel.isOpen())  {
+                channel.close();
+            }
+        }
+    }
+
+    protected void deleteExchange() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        // use a different channel since channel closes on exception.
+        Channel channel = createChannel();
+        try {
+            log.info("Deleting exchange " + getExchange());
+            channel.exchangeDelete(getExchange());
+        }
+        catch(Exception ex) {
+            log.debug(ex.toString(), ex);
+            // ignore it.
+        }
+        finally {
+            if (channel.isOpen())  {
+                channel.close();
+            }
+        }
     }
 }
