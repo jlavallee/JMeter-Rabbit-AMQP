@@ -1,10 +1,16 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
+import com.rabbitmq.client.AMQP;
 import java.io.IOException;
+import java.security.*;
+import java.util.*;
 
+import com.rabbitmq.client.MessageProperties;
+import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
+import org.apache.jmeter.testelement.property.TestElementProperty;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
@@ -22,13 +28,23 @@ import com.rabbitmq.client.Channel;
  */
 public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = -8420658040465788497L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     //++ These are JMX names, and must not be changed
     private final static String MESSAGE = "AMQPPublisher.Message";
     private final static String MESSAGE_ROUTING_KEY = "AMQPPublisher.MessageRoutingKey";
+    private final static String MESSAGE_TYPE = "AMQPPublisher.MessageType";
+    private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
+    private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
+    private final static String HEADERS = "AMQPPublisher.Headers";
+
+    public static boolean DEFAULT_PERSISTENT = false;
+    private final static String PERSISTENT = "AMQPConsumer.Persistent";
+
+    public static boolean DEFAULT_USE_TX = false;
+    private final static String USE_TX = "AMQPConsumer.UseTx";
 
     private transient Channel channel;
 
@@ -48,8 +64,9 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
         try {
             initChannel();
-        } catch (IOException ex) {
-            log.error("Failed to initialize channel", ex);
+        } catch (Exception ex) {
+            log.error("Failed to initialize channel : ", ex);
+            result.setResponseMessage(ex.toString());
             return result;
         }
 
@@ -59,26 +76,47 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         /*
          * Perform the sampling
          */
+
+        // aggregate samples.
+        int loop = getIterationsAsInt();
         result.sampleStart(); // Start timing
         try {
-            channel.basicPublish(getExchange(), getMessageRoutingKey(), getProperties(), getMessageBytes());
+            AMQP.BasicProperties messageProperties = getProperties();
+            messageProperties.setHeaders(prepareHeaders());
+            byte[] messageBytes = getMessageBytes();
+
+            for (int idx = 0; idx < loop; idx++) {
+                // try to force jms semantics.
+                // but this does not work since RabbitMQ does not sync to disk if consumers are connected as
+                // seen by iostat -cd 1. TPS value remains at 0.
+
+                channel.basicPublish(getExchange(), getMessageRoutingKey(), messageProperties, messageBytes);
+
+            }
+
+            // commit the sample.
+            if (getUseTx()) {
+                channel.txCommit();
+            }
+
             /*
              * Set up the sample result details
              */
             result.setSamplerData(data);
-            result.setResponseData("OK", null);
+            result.setResponseData(new String(messageBytes), null);
             result.setDataType(SampleResult.TEXT);
 
             result.setResponseCodeOK();
             result.setResponseMessage("OK");
             result.setSuccessful(true);
         } catch (Exception ex) {
-            log.debug("", ex);
+            log.debug(ex.getMessage(), ex);
             result.setResponseCode("000");
             result.setResponseMessage(ex.toString());
         }
-
-        result.sampleEnd(); // End timimg
+        finally {
+            result.sampleEnd(); // End timimg
+        }
 
         return result;
     }
@@ -110,10 +148,66 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         setProperty(MESSAGE, content);
     }
 
+    /**
+     * @return the message type for the sample
+     */
+    public String getMessageType() {
+        return getPropertyAsString(MESSAGE_TYPE);
+    }
+
+    public void setMessageType(String content) {
+        setProperty(MESSAGE_TYPE, content);
+    }
+
+    /**
+     * @return the reply-to queue for the sample
+     */
+    public String getReplyToQueue() {
+        return getPropertyAsString(REPLY_TO_QUEUE);
+    }
+
+    public void setReplyToQueue(String content) {
+        setProperty(REPLY_TO_QUEUE, content);
+    }
+
+    /**
+     * @return the correlation identifier for the sample
+     */
+    public String getCorrelationId() {
+        return getPropertyAsString(CORRELATION_ID);
+    }
+
+    public void setCorrelationId(String content) {
+        setProperty(CORRELATION_ID, content);
+    }
+
+    public Arguments getHeaders() {
+        return (Arguments) getProperty(HEADERS).getObjectValue();
+    }
+
+    public void setHeaders(Arguments headers) {
+        setProperty(new TestElementProperty(HEADERS, headers));
+    }
+
+    public Boolean getPersistent() {
+        return getPropertyAsBoolean(PERSISTENT, DEFAULT_PERSISTENT);
+    }
+
+    public void setPersistent(Boolean persistent) {
+       setProperty(PERSISTENT, persistent);
+    }
+
+    public Boolean getUseTx() {
+        return getPropertyAsBoolean(USE_TX, DEFAULT_USE_TX);
+    }
+
+    public void setUseTx(Boolean tx) {
+       setProperty(USE_TX, tx);
+    }
 
     @Override
     public boolean interrupt() {
-        testEnded();
+        cleanup();
         return true;
     }
 
@@ -127,4 +221,36 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         this.channel = channel;
     }
 
+    @Override
+    protected AMQP.BasicProperties getProperties() {
+        AMQP.BasicProperties parentProps = super.getProperties();
+
+        int deliveryMode = getPersistent() ? 2 : 1;
+
+        AMQP.BasicProperties publishProperties =
+                new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
+                parentProps.getHeaders(), deliveryMode, parentProps.getPriority(),
+                getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
+                parentProps.getMessageId(), parentProps.getTimestamp(), getMessageType(),
+                parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
+
+        return publishProperties;
+    }
+
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        boolean ret = super.initChannel();
+        if (getUseTx()) {
+            channel.txSelect();
+        }
+        return ret;
+    }
+
+    private Map<String, Object> prepareHeaders() {
+        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, String> source = getHeaders().getArgumentsAsMap();
+        for (Map.Entry<String, String> item : source.entrySet()) {
+            result.put(item.getKey(), item.getValue());
+        }
+        return result;
+    }
 }

@@ -2,8 +2,10 @@ package com.zeroclue.jmeter.protocol.amqp.gui;
 
 import java.awt.Dimension;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
+import org.apache.jmeter.config.Arguments;
+import org.apache.jmeter.config.gui.ArgumentsPanel;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.gui.JLabeledTextArea;
 import org.apache.jorphan.gui.JLabeledTextField;
@@ -33,6 +35,14 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     */
     private JLabeledTextArea message = new JLabeledTextArea("Message Content");
     private JLabeledTextField messageRoutingKey = new JLabeledTextField("Routing Key");
+    private JLabeledTextField messageType = new JLabeledTextField("Message Type");
+    private JLabeledTextField replyToQueue = new JLabeledTextField("Reply-To Queue");
+    private JLabeledTextField correlationId = new JLabeledTextField("Correlation Id");
+
+    private JCheckBox persistent = new JCheckBox("Persistent?", AMQPPublisher.DEFAULT_PERSISTENT);
+    private JCheckBox useTx = new JCheckBox("Use Transactions?", AMQPPublisher.DEFAULT_USE_TX);
+
+    private ArgumentsPanel headers = new ArgumentsPanel("Headers");
 
     public AMQPPublisherGui(){
         init();
@@ -60,8 +70,15 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         if (!(element instanceof AMQPPublisher)) return;
         AMQPPublisher sampler = (AMQPPublisher) element;
 
+        persistent.setSelected(sampler.getPersistent());
+        useTx.setSelected(sampler.getUseTx());
+
         messageRoutingKey.setText(sampler.getMessageRoutingKey());
+        messageType.setText(sampler.getMessageType());
+        replyToQueue.setText(sampler.getReplyToQueue());
+        correlationId.setText(sampler.getCorrelationId());
         message.setText(sampler.getMessage());
+        configureHeaders(sampler);
     }
 
     /**
@@ -85,8 +102,15 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
 
         super.modifyTestElement(sampler);
 
+        sampler.setPersistent(persistent.isSelected());
+        sampler.setUseTx(useTx.isSelected());
+
         sampler.setMessageRoutingKey(messageRoutingKey.getText());
         sampler.setMessage(message.getText());
+        sampler.setMessageType(messageType.getText());
+        sampler.setReplyToQueue(replyToQueue.getText());
+        sampler.setCorrelationId(correlationId.getText());
+        sampler.setHeaders((Arguments) headers.createTestElement());
     }
 
     @Override
@@ -97,12 +121,24 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /*
      * Helper method to set up the GUI screen
      */
-    protected void init() {
+    @Override
+    protected final void init() {
         super.init();
+        persistent.setPreferredSize(new Dimension(100, 25));
+        useTx.setPreferredSize(new Dimension(100, 25));
         messageRoutingKey.setPreferredSize(new Dimension(100, 25));
+        messageType.setPreferredSize(new Dimension(100, 25));
+        replyToQueue.setPreferredSize(new Dimension(100, 25));
+        correlationId.setPreferredSize(new Dimension(100, 25));
         message.setPreferredSize(new Dimension(400, 150));
 
+        mainPanel.add(persistent);
+        mainPanel.add(useTx);
         mainPanel.add(messageRoutingKey);
+        mainPanel.add(messageType);
+        mainPanel.add(replyToQueue);
+        mainPanel.add(correlationId);
+        mainPanel.add(headers);
         mainPanel.add(message);
     }
 
@@ -112,7 +148,23 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     @Override
     public void clearGui() {
         super.clearGui();
+        persistent.setSelected(AMQPPublisher.DEFAULT_PERSISTENT);
+        useTx.setSelected(AMQPPublisher.DEFAULT_USE_TX);
         messageRoutingKey.setText("");
+        messageType.setText("");
+        replyToQueue.setText("");
+        correlationId.setText("");
+        headers.clearGui();
         message.setText("");
+    }
+
+    private void configureHeaders(AMQPPublisher sampler)
+    {
+        Arguments sampleHeaders = sampler.getHeaders();
+        if (sampleHeaders != null) {
+            headers.configure(sampleHeaders);
+        } else {
+            headers.clearGui();
+        }
     }
 }
