@@ -1,8 +1,14 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
+import java.io.FileInputStream;
 import java.util.*;
 import java.security.*;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.SSLContext;
 
 import com.rabbitmq.client.*;
 import org.apache.jmeter.samplers.AbstractSampler;
@@ -14,6 +20,11 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import org.apache.commons.lang3.StringUtils;
 
 public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
+
+    // these are hard-coded for now, should eventually be configurable
+    private static final String KEYSTORE_TYPE = "PKCS12";
+    private static final String CERT_TYPE = "SunX509";
+    private static final String SSL_VERSION = "TLSv1.2";
 
     public static final boolean DEFAULT_EXCHANGE_DURABLE = true;
     public static final boolean DEFAULT_EXCHANGE_REDECLARE = false;
@@ -42,8 +53,13 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected static final String HOST = "AMQPSampler.Host";
     protected static final String PORT = "AMQPSampler.Port";
     protected static final String SSL = "AMQPSampler.SSL";
+    protected static final String SSL_CLIENT_CERT = "AMQPSampler.SSLClientCert";
     protected static final String USERNAME = "AMQPSampler.Username";
     protected static final String PASSWORD = "AMQPSampler.Password";
+    protected static final String PATH_TO_KEY_STORE = "AMQPSampler.PathToKeyStore";
+    protected static final String KEY_STORE_PASSWORD = "AMQPSampler.KeyStorePassword";
+    protected static final String PATH_TO_TRUST_STORE = "AMQPSampler.PathToTrustStore";
+    protected static final String TRUST_STORE_PASSWORD = "AMQPSampler.TrustStorePassword";
     private static final String TIMEOUT = "AMQPSampler.Timeout";
     private static final String ITERATIONS = "AMQPSampler.Iterations";
     private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
@@ -62,7 +78,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
     }
 
-    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected boolean initChannel() throws Exception {
         Channel channel = getChannel();
 
         if(channel != null && !channel.isOpen()){
@@ -295,6 +311,17 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return getPropertyAsBoolean(SSL);
     }
 
+    public void setSSLClientCert(String content) {
+        setProperty(SSL_CLIENT_CERT, content);
+    }
+
+    public void setSSLClientCert(Boolean value) {
+        setProperty(SSL_CLIENT_CERT, value.toString());
+    }
+
+    public boolean sslClientCert() {
+        return getPropertyAsBoolean(SSL_CLIENT_CERT);
+    }
 
     public String getUsername() {
         return getPropertyAsString(USERNAME);
@@ -311,6 +338,38 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
     public void setPassword(String name) {
         setProperty(PASSWORD, name);
+    }
+
+    public String getPathToKeyStore() {
+        return getPropertyAsString(PATH_TO_KEY_STORE);
+    }
+
+    public void setPathToKeyStore(String pathToKeyStore) {
+        setProperty(PATH_TO_KEY_STORE, pathToKeyStore);
+    }
+
+    public String getKeyStorePassword() {
+        return getPropertyAsString(KEY_STORE_PASSWORD);
+    }
+
+    public void setKeyStorePassword(String keyStorePassword) {
+        setProperty(KEY_STORE_PASSWORD, keyStorePassword);
+    }
+
+    public String getPathToTrustStore() {
+        return getPropertyAsString(PATH_TO_TRUST_STORE);
+    }
+
+    public void setPathToTrustStore(String pathToTrustStore) {
+        setProperty(PATH_TO_TRUST_STORE, pathToTrustStore);
+    }
+
+    public String getTrustStorePassword() {
+        return getPropertyAsString(TRUST_STORE_PASSWORD);
+    }
+
+    public void setTrustStorePassword(String trustStorePassword) {
+        setProperty(TRUST_STORE_PASSWORD, trustStorePassword);
     }
 
     /**
@@ -400,7 +459,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
     }
 
-    protected Channel createChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected Channel createChannel() throws Exception {
         log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
 
          if (connection == null || !connection.isOpen()) {
@@ -409,7 +468,11 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
             factory.setUsername(getUsername());
             factory.setPassword(getPassword());
             if (connectionSSL()) {
-                factory.useSslProtocol("TLS");
+                if (sslClientCert()) {
+                    factory.useSslProtocol(getSslContext());
+                } else {
+                    factory.useSslProtocol("TLS");
+                }
             }
 
             log.info("RabbitMQ ConnectionFactory using:"
@@ -439,7 +502,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return channel;
     }
 
-    protected void deleteQueue() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected void deleteQueue() throws Exception {
         // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {
@@ -457,7 +520,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
     }
 
-    protected void deleteExchange() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected void deleteExchange() throws Exception {
         // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {
@@ -473,5 +536,34 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
                 channel.close();
             }
         }
+    }
+
+    private SSLContext getSslContext() throws Exception {
+        SSLContext c = SSLContext.getInstance(SSL_VERSION);
+
+        // use the default SecureRandom implementation by setting the third param to null
+        c.init(getKeyManagers(), getTrustManagers(), null);
+
+        return c;
+    }
+
+    private KeyManager[] getKeyManagers() throws Exception {
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(CERT_TYPE);
+        kmf.init(getKeyStore(getPathToKeyStore(), getKeyStorePassword()), getKeyStorePassword().toCharArray());
+
+        return kmf.getKeyManagers();
+    }
+
+    private TrustManager[] getTrustManagers() throws Exception {
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(CERT_TYPE);
+        tmf.init(getKeyStore(getPathToTrustStore(), getTrustStorePassword()));
+
+        return tmf.getTrustManagers();
+    }
+
+    private KeyStore getKeyStore(String path, String pass) throws Exception {
+        KeyStore ks = KeyStore.getInstance(KEYSTORE_TYPE);
+        ks.load(new FileInputStream(path), pass.toCharArray());
+        return ks;
     }
 }

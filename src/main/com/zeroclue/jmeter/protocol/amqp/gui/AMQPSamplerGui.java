@@ -42,7 +42,12 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField timeout = new JLabeledTextField("Timeout");
     protected JLabeledTextField username = new JLabeledTextField("Username");
     protected JLabeledTextField password = new JLabeledTextField("Password");
+    protected JLabeledTextField pathToKeyStore = new JLabeledTextField("Path to Key Store");
+    protected JLabeledTextField keyStorePassword = new JLabeledTextField("Key Store Password");
+    protected JLabeledTextField pathToTrustStore = new JLabeledTextField("Path to Trust Store");
+    protected JLabeledTextField trustStorePassword = new JLabeledTextField("Trust Store Password");
     private final JCheckBox SSL = new JCheckBox("SSL?", false);
+    private final JCheckBox SSL_CLIENT_CERT = new JCheckBox("Client SSL Cert?", false);
 
     private final JLabeledTextField iterations = new JLabeledTextField("Number of samples to Aggregate");
 
@@ -80,7 +85,12 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         port.setText(sampler.getPort());
         username.setText(sampler.getUsername());
         password.setText(sampler.getPassword());
+        pathToKeyStore.setText(sampler.getPathToKeyStore());
+        keyStorePassword.setText(sampler.getKeyStorePassword());
+        pathToTrustStore.setText(sampler.getPathToTrustStore());
+        trustStorePassword.setText(sampler.getTrustStorePassword());
         SSL.setSelected(sampler.connectionSSL());
+        SSL_CLIENT_CERT.setSelected(sampler.sslClientCert());
         log.info("AMQPSamplerGui.configure() called");
     }
 
@@ -111,6 +121,10 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         port.setText(AMQPSampler.DEFAULT_PORT_STRING);
         username.setText("guest");
         password.setText("guest");
+        pathToKeyStore.setText("");
+        keyStorePassword.setText("");
+        pathToTrustStore.setText("");
+        trustStorePassword.setText("");
         SSL.setSelected(false);
     }
 
@@ -144,7 +158,12 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setPort(port.getText());
         sampler.setUsername(username.getText());
         sampler.setPassword(password.getText());
+        sampler.setPathToKeyStore(pathToKeyStore.getText());
+        sampler.setKeyStorePassword(keyStorePassword.getText());
+        sampler.setPathToTrustStore(pathToTrustStore.getText());
+        sampler.setTrustStorePassword(trustStorePassword.getText());
         sampler.setConnectionSSL(SSL.isSelected());
+        sampler.setSSLClientCert(SSL_CLIENT_CERT.isSelected());
         log.info("AMQPSamplerGui.modifyTestElement() called, set user/pass to " + username.getText() + "/" + password.getText() + " on sampler " + sampler);
     }
 
@@ -264,6 +283,10 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         gridBagConstraints.gridy = 2;
         serverSettings.add(SSL, gridBagConstraints);
 
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        serverSettings.add(SSL_CLIENT_CERT, gridBagConstraints);
+
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         serverSettings.add(username, gridBagConstraints);
@@ -274,6 +297,22 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
+        serverSettings.add(pathToKeyStore, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        serverSettings.add(keyStorePassword, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        serverSettings.add(pathToTrustStore, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        serverSettings.add(trustStorePassword, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
         serverSettings.add(timeout, gridBagConstraints);
 
         gridBagConstraintsCommon.gridx = 1;
