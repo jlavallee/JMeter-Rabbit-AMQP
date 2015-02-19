@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="2.4" jmeter="2.9 r1437961">
+<jmeterTestPlan version="1.2" properties="2.7" jmeter="2.10-SNAPSHOT.20130504">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="RPC Test Plan" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
@@ -51,19 +51,27 @@
         <hashTree>
           <com.zeroclue.jmeter.protocol.amqp.AMQPPublisher guiclass="com.zeroclue.jmeter.protocol.amqp.gui.AMQPPublisherGui" testclass="com.zeroclue.jmeter.protocol.amqp.AMQPPublisher" testname="RPC Request" enabled="true">
             <stringProp name="AMQPSampler.Exchange">my_rpc_exchange</stringProp>
+            <boolProp name="AMQPSampler.ExchangeDurable">false</boolProp>
+            <boolProp name="AMQPSampler.ExchangeRedeclare">false</boolProp>
             <stringProp name="AMQPSampler.Queue">RPCRequestQueue</stringProp>
             <stringProp name="AMQPSampler.RoutingKey">RPCMessage.Request.v1_0</stringProp>
             <stringProp name="AMQPSampler.VirtualHost">/</stringProp>
             <stringProp name="AMQPSampler.MessageTTL"></stringProp>
+            <stringProp name="AMQPSampler.MessageExpires"></stringProp>
             <stringProp name="AMQPSampler.ExchangeType">direct</stringProp>
             <stringProp name="AMQPSampler.QueueDurable">true</stringProp>
             <stringProp name="AMQPSampler.QueueExclusive">false</stringProp>
             <stringProp name="AMQPSampler.QueueAutoDelete">false</stringProp>
+            <boolProp name="AMQPSampler.Redeclare">false</boolProp>
             <stringProp name="AMQPSampler.Timeout">1000</stringProp>
+            <stringProp name="AMQPSampler.Iterations">1</stringProp>
             <stringProp name="AMQPSampler.Host">localhost</stringProp>
             <stringProp name="AMQPSampler.Port">5672</stringProp>
             <stringProp name="AMQPSampler.Username">guest</stringProp>
             <stringProp name="AMQPSampler.Password">guest</stringProp>
+            <stringProp name="AMQPSampler.SSL">false</stringProp>
+            <boolProp name="AMQPConsumer.Persistent">false</boolProp>
+            <boolProp name="AMQPConsumer.UseTx">false</boolProp>
             <stringProp name="AMQPPublisher.MessageRoutingKey">RPCMessage.Request.v1_0</stringProp>
             <stringProp name="AMQPPublisher.Message">{
         &quot;RequestMessageText&quot;: &apos;${uniqueId}&apos;
@@ -71,23 +79,34 @@
             <stringProp name="AMQPPublisher.MessageType">RPCMessageRequest</stringProp>
             <stringProp name="AMQPPublisher.ReplyToQueue">jMeter_${__threadNum}_${replyToQueue}</stringProp>
             <stringProp name="AMQPPublisher.CorrelationId">${uniqueId}</stringProp>
+            <elementProp name="AMQPPublisher.Headers" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
           </com.zeroclue.jmeter.protocol.amqp.AMQPPublisher>
           <hashTree/>
           <com.zeroclue.jmeter.protocol.amqp.AMQPConsumer guiclass="com.zeroclue.jmeter.protocol.amqp.gui.AMQPConsumerGui" testclass="com.zeroclue.jmeter.protocol.amqp.AMQPConsumer" testname="RPC Response" enabled="true">
-            <stringProp name="AMQPSampler.Exchange"></stringProp>
+            <stringProp name="AMQPSampler.Exchange">my_rpc_exchange</stringProp>
+            <boolProp name="AMQPSampler.ExchangeDurable">false</boolProp>
+            <boolProp name="AMQPSampler.ExchangeRedeclare">false</boolProp>
             <stringProp name="AMQPSampler.Queue">jMeter_${__threadNum}_${replyToQueue}</stringProp>
             <stringProp name="AMQPSampler.RoutingKey">RPCMessage.Request.v1_0</stringProp>
             <stringProp name="AMQPSampler.VirtualHost">/</stringProp>
             <stringProp name="AMQPSampler.MessageTTL"></stringProp>
+            <stringProp name="AMQPSampler.MessageExpires"></stringProp>
             <stringProp name="AMQPSampler.ExchangeType">direct</stringProp>
             <stringProp name="AMQPSampler.QueueDurable">false</stringProp>
             <stringProp name="AMQPSampler.QueueExclusive">true</stringProp>
             <stringProp name="AMQPSampler.QueueAutoDelete">true</stringProp>
+            <boolProp name="AMQPSampler.Redeclare">false</boolProp>
             <stringProp name="AMQPSampler.Timeout">1000</stringProp>
+            <stringProp name="AMQPSampler.Iterations">1</stringProp>
             <stringProp name="AMQPSampler.Host">localhost</stringProp>
             <stringProp name="AMQPSampler.Port">5672</stringProp>
             <stringProp name="AMQPSampler.Username">guest</stringProp>
             <stringProp name="AMQPSampler.Password">guest</stringProp>
+            <stringProp name="AMQPSampler.SSL">false</stringProp>
+            <boolProp name="AMQPConsumer.ReadResponse">false</boolProp>
+            <stringProp name="AMQPConsumer.PrefetchCount">0</stringProp>
             <stringProp name="AMQPConsumer.ReceiveTimeout">10000</stringProp>
             <stringProp name="AMQPConsumer.PurgeQueue">false</stringProp>
             <stringProp name="AMQPConsumer.AutoAck">true</stringProp>
