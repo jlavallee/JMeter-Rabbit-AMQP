@@ -38,6 +38,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private final static String MESSAGE_TYPE = "AMQPPublisher.MessageType";
     private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
     private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
+    private final static String MESSAGE_ID = "AMQPPublisher.MessageId";
     private final static String HEADERS = "AMQPPublisher.Headers";
 
     public static boolean DEFAULT_PERSISTENT = false;
@@ -181,6 +182,17 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         setProperty(CORRELATION_ID, content);
     }
 
+    /**
+     * @return the message id for the sample
+     */
+    public String getMessageId() {
+        return getPropertyAsString(MESSAGE_ID);
+    }
+
+    public void setMessageId(String content) {
+        setProperty(MESSAGE_ID, content);
+    }
+
     public Arguments getHeaders() {
         return (Arguments) getProperty(HEADERS).getObjectValue();
     }
@@ -231,7 +243,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
                 new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
                 parentProps.getHeaders(), deliveryMode, parentProps.getPriority(),
                 getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
-                parentProps.getMessageId(), parentProps.getTimestamp(), getMessageType(),
+                getMessageId(), parentProps.getTimestamp(), getMessageType(),
                 parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
 
         return publishProperties;
