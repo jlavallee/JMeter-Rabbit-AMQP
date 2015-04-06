@@ -238,12 +238,13 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         AMQP.BasicProperties parentProps = super.getProperties();
 
         int deliveryMode = getPersistent() ? 2 : 1;
+        String messageId = getMessageId().isEmpty() ? parentProps.getMessageId() : getMessageId();
 
         AMQP.BasicProperties publishProperties =
                 new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
                 parentProps.getHeaders(), deliveryMode, parentProps.getPriority(),
                 getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
-                getMessageId(), parentProps.getTimestamp(), getMessageType(),
+                messageId, parentProps.getTimestamp(), getMessageType(),
                 parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
 
         return publishProperties;
