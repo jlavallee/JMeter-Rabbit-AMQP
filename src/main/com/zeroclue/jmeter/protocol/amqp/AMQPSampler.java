@@ -124,12 +124,6 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected abstract Channel getChannel();
     protected abstract void setChannel(Channel channel);
 
-    // TODO: make this configurable
-    protected BasicProperties getProperties() {
-        AMQP.BasicProperties properties = MessageProperties.PERSISTENT_TEXT_PLAIN;
-        return properties;
-    }
-
     /**
      * @return a string for the sampleResult Title
      */
