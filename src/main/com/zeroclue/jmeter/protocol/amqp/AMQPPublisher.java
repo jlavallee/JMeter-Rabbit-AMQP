@@ -237,7 +237,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
         int deliveryMode = getPersistent() ? 2 : 1;
         
-        final String contentType = StringUtils.defaultString(getContentType(), parentProps.getContentType());
+        final String contentType = StringUtils.defaultIfBlank(getContentType(), parentProps.getContentType());
 
         AMQP.BasicProperties publishProperties =
                 new AMQP.BasicProperties(contentType, parentProps.getContentEncoding(),
