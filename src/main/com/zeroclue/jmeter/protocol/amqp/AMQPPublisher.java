@@ -40,6 +40,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
     private final static String CONTENT_TYPE = "AMQPPublisher.ContentType";
     private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
+    private final static String MESSAGE_ID = "AMQPPublisher.MessageId";
     private final static String HEADERS = "AMQPPublisher.Headers";
 
     public static boolean DEFAULT_PERSISTENT = false;
@@ -191,6 +192,17 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         setProperty(CORRELATION_ID, content);
     }
 
+    /**
+     * @return the message id for the sample
+     */
+    public String getMessageId() {
+        return getPropertyAsString(MESSAGE_ID);
+    }
+
+    public void setMessageId(String content) {
+        setProperty(MESSAGE_ID, content);
+    }
+
     public Arguments getHeaders() {
         return (Arguments) getProperty(HEADERS).getObjectValue();
     }
@@ -236,14 +248,15 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         AMQP.BasicProperties parentProps = super.getProperties();
 
         int deliveryMode = getPersistent() ? 2 : 1;
-        
-        final String contentType = StringUtils.defaultIfBlank(getContentType(), parentProps.getContentType());
+       
+        final String contentType = StringUtils.defaultIfEmpty(getContentType(), parentProps.getContentType());
+        final String messageId = StringUtils.defaultIfEmpty(getMessageId(), parentProps.getMessageId());
 
         AMQP.BasicProperties publishProperties =
                 new AMQP.BasicProperties(contentType, parentProps.getContentEncoding(),
                 parentProps.getHeaders(), deliveryMode, parentProps.getPriority(),
                 getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
-                parentProps.getMessageId(), parentProps.getTimestamp(), getMessageType(),
+                messageId, parentProps.getTimestamp(), getMessageType(),
                 parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
 
         return publishProperties;
