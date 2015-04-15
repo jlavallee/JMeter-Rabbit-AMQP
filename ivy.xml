@@ -15,7 +15,7 @@
         <dependency org="commons-net" name="commons-net" rev="1.4.1" conf="build->default"/>
         <dependency org="org.apache.jmeter" name="jorphan" rev="2.6" conf="build->default"/>
         <dependency org="avalon-logkit" name="avalon-logkit" rev="2.0" conf="build->default"/>
-        <dependency org="com.rabbitmq" name="amqp-client" rev="3.3.4" conf="build->default"/>
+        <dependency org="com.rabbitmq" name="amqp-client" rev="3.5.1" conf="build->default"/>
         <dependency org="org.apache.jmeter" name="ApacheJMeter_core" rev="2.11" conf="build->default"/>
     </dependencies>
 </ivy-module>

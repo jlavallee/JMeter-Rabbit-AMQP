@@ -83,7 +83,6 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         result.sampleStart(); // Start timing
         try {
             AMQP.BasicProperties messageProperties = getProperties();
-            messageProperties.setHeaders(prepareHeaders());
             byte[] messageBytes = getMessageBytes();
 
             for (int idx = 0; idx < loop; idx++) {
@@ -233,21 +232,22 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         this.channel = channel;
     }
 
-    @Override
     protected AMQP.BasicProperties getProperties() {
-        AMQP.BasicProperties parentProps = super.getProperties();
+        AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
 
         int deliveryMode = getPersistent() ? 2 : 1;
         String messageId = getMessageId().isEmpty() ? parentProps.getMessageId() : getMessageId();
-
-        AMQP.BasicProperties publishProperties =
-                new AMQP.BasicProperties(parentProps.getContentType(), parentProps.getContentEncoding(),
-                parentProps.getHeaders(), deliveryMode, parentProps.getPriority(),
-                getCorrelationId(), getReplyToQueue(), parentProps.getExpiration(),
-                messageId, parentProps.getTimestamp(), getMessageType(),
-                parentProps.getUserId(), parentProps.getAppId(), parentProps.getClusterId());
-
-        return publishProperties;
+        
+        return builder
+                .contentType("text/plain")
+                .deliveryMode(deliveryMode)
+                .priority(0)
+                .correlationId(getCorrelationId())
+                .replyTo(getReplyToQueue())
+                .type(getMessageType())
+                .headers(prepareHeaders())
+                .messageId(messageId)
+                .build();
     }
 
     protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
