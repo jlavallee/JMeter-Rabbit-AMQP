@@ -1,11 +1,12 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import com.rabbitmq.client.AMQP;
+
 import java.io.IOException;
 import java.security.*;
 import java.util.*;
 
-import com.rabbitmq.client.MessageProperties;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
@@ -37,6 +38,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private final static String MESSAGE_ROUTING_KEY = "AMQPPublisher.MessageRoutingKey";
     private final static String MESSAGE_TYPE = "AMQPPublisher.MessageType";
     private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
+    private final static String CONTENT_TYPE = "AMQPPublisher.ContentType";
     private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
     private final static String MESSAGE_ID = "AMQPPublisher.MessageId";
     private final static String HEADERS = "AMQPPublisher.Headers";
@@ -170,6 +172,14 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         setProperty(REPLY_TO_QUEUE, content);
     }
 
+    public String getContentType() {
+    	return getPropertyAsString(CONTENT_TYPE);
+    }
+    
+    public void setContentType(String contentType) {
+    	setProperty(CONTENT_TYPE, contentType);
+    }
+    
     /**
      * @return the correlation identifier for the sample
      */
@@ -233,11 +243,12 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     }
 
     protected AMQP.BasicProperties getProperties() {
-        AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
+        final AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
 
-        int deliveryMode = getPersistent() ? 2 : 1;
+        final int deliveryMode = getPersistent() ? 2 : 1;
+        final String contentType = StringUtils.defaultIfEmpty(getContentType(), "text/plain");
         
-        builder.contentType("text/plain")
+        builder.contentType(contentType)
             .deliveryMode(deliveryMode)
             .priority(0)
             .correlationId(getCorrelationId())

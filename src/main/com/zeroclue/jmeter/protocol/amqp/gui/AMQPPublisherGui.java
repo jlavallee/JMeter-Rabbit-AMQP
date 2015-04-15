@@ -38,6 +38,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     private JLabeledTextField messageType = new JLabeledTextField("Message Type");
     private JLabeledTextField replyToQueue = new JLabeledTextField("Reply-To Queue");
     private JLabeledTextField correlationId = new JLabeledTextField("Correlation Id");
+    private JLabeledTextField contentType = new JLabeledTextField("ContentType");
     private JLabeledTextField messageId = new JLabeledTextField("Message Id");
 
     private JCheckBox persistent = new JCheckBox("Persistent?", AMQPPublisher.DEFAULT_PERSISTENT);
@@ -77,6 +78,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         messageRoutingKey.setText(sampler.getMessageRoutingKey());
         messageType.setText(sampler.getMessageType());
         replyToQueue.setText(sampler.getReplyToQueue());
+        contentType.setText(sampler.getContentType());
         correlationId.setText(sampler.getCorrelationId());
         messageId.setText(sampler.getMessageId());
         message.setText(sampler.getMessage());
@@ -112,6 +114,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         sampler.setMessageType(messageType.getText());
         sampler.setReplyToQueue(replyToQueue.getText());
         sampler.setCorrelationId(correlationId.getText());
+        sampler.setContentType(contentType.getText());
         sampler.setMessageId(messageId.getText());
         sampler.setHeaders((Arguments) headers.createTestElement());
     }
@@ -133,6 +136,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         messageType.setPreferredSize(new Dimension(100, 25));
         replyToQueue.setPreferredSize(new Dimension(100, 25));
         correlationId.setPreferredSize(new Dimension(100, 25));
+        contentType.setPreferredSize(new Dimension(100, 25));
         messageId.setPreferredSize(new Dimension(100, 25));
         message.setPreferredSize(new Dimension(400, 150));
 
@@ -142,6 +146,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         mainPanel.add(messageType);
         mainPanel.add(replyToQueue);
         mainPanel.add(correlationId);
+        mainPanel.add(contentType);
         mainPanel.add(messageId);
         mainPanel.add(headers);
         mainPanel.add(message);
@@ -159,6 +164,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         messageType.setText("");
         replyToQueue.setText("");
         correlationId.setText("");
+        contentType.setText("");
         messageId.setText("");
         headers.clearGui();
         message.setText("");
