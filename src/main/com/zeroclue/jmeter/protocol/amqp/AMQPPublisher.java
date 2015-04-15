@@ -236,18 +236,19 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
 
         int deliveryMode = getPersistent() ? 2 : 1;
-        String messageId = getMessageId().isEmpty() ? parentProps.getMessageId() : getMessageId();
         
-        return builder
-                .contentType("text/plain")
-                .deliveryMode(deliveryMode)
-                .priority(0)
-                .correlationId(getCorrelationId())
-                .replyTo(getReplyToQueue())
-                .type(getMessageType())
-                .headers(prepareHeaders())
-                .messageId(messageId)
-                .build();
+        builder.contentType("text/plain")
+            .deliveryMode(deliveryMode)
+            .priority(0)
+            .correlationId(getCorrelationId())
+            .replyTo(getReplyToQueue())
+            .type(getMessageType())
+            .headers(prepareHeaders())
+            .build();
+        if (getMessageId() != null && getMessageId().isEmpty()) {
+            builder.messageId(getMessageId());
+        }
+        return builder.build();
     }
 
     protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
