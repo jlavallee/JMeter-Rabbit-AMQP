@@ -13,3 +13,4 @@ lib/
 /ivy/
 *.iml
 .idea
+/bin/
