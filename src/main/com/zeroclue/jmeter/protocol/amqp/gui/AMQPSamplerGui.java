@@ -43,6 +43,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField username = new JLabeledTextField("Username");
     protected JLabeledTextField password = new JLabeledTextField("Password");
     private final JCheckBox SSL = new JCheckBox("SSL?", false);
+    private final JCheckBox shareChannel = new JCheckBox("Share?", false);
 
     private final JLabeledTextField iterations = new JLabeledTextField("Number of samples to Aggregate");
 
@@ -81,6 +82,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         username.setText(sampler.getUsername());
         password.setText(sampler.getPassword());
         SSL.setSelected(sampler.connectionSSL());
+        shareChannel.setSelected(sampler.shareChannel());
         log.info("AMQPSamplerGui.configure() called");
     }
 
@@ -112,6 +114,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         username.setText("guest");
         password.setText("guest");
         SSL.setSelected(false);
+        shareChannel.setSelected(false);
     }
 
     /**
@@ -145,6 +148,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setUsername(username.getText());
         sampler.setPassword(password.getText());
         sampler.setConnectionSSL(SSL.isSelected());
+        sampler.setShareChannel(shareChannel.isSelected());
         log.info("AMQPSamplerGui.modifyTestElement() called, set user/pass to " + username.getText() + "/" + password.getText() + " on sampler " + sampler);
     }
 
@@ -264,6 +268,10 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         gridBagConstraints.gridy = 2;
         serverSettings.add(SSL, gridBagConstraints);
 
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        serverSettings.add(shareChannel, gridBagConstraints);
+        
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         serverSettings.add(username, gridBagConstraints);
