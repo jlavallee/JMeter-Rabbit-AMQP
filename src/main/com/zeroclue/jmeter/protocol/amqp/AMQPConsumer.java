@@ -291,8 +291,15 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     public void cleanup() {
 
         try {
+        	// TODO: Refactor closing mechanism (cleanup AMQPConsumers before closing connection)
             if (consumerTag != null) {
-               channel.basicCancel(consumerTag);
+            	// If "shareChannel" is enabled, channel may have been already 
+            	// closed by cleanup call from another Sampler
+            	if (channel.isOpen() ) {
+            		channel.basicCancel(consumerTag);
+            	} else {
+            		log.warn("channel.basicCancel not called because channel is already close");
+            	}
             }
         } catch(IOException e) {
             log.error("Couldn't safely cancel the sample " + consumerTag, e);

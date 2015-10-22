@@ -11,6 +11,9 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
+
+import com.zeroclue.jmeter.protocol.amqp.ChannelCache;
+
 import org.apache.commons.lang3.StringUtils;
 
 public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
@@ -42,6 +45,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected static final String HOST = "AMQPSampler.Host";
     protected static final String PORT = "AMQPSampler.Port";
     protected static final String SSL = "AMQPSampler.SSL";
+    protected static final String SHARE_CHANNEL = "AMQPSampler.ShareChannel";
     protected static final String USERNAME = "AMQPSampler.Username";
     protected static final String PASSWORD = "AMQPSampler.Password";
     private static final String TIMEOUT = "AMQPSampler.Timeout";
@@ -56,6 +60,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
     private transient ConnectionFactory factory;
     private transient Connection connection;
+    private transient static final ChannelCache channelCache = new ChannelCache();
 
     protected AMQPSampler(){
         factory = new ConnectionFactory();
@@ -72,8 +77,27 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
 
         if(channel == null) {
-            channel = createChannel();
-            setChannel(channel);
+
+        	// if channel sharing is enabled, look for channel in channelCache
+        	if(shareChannel()) {
+        		String cnxkey = ChannelCache.genKey(getVirtualHost(), getHost(), getPort(), getUsername(), getPassword(), getTimeout(), connectionSSL());
+        		channel = channelCache.get(cnxkey);
+        		
+        		// channel isn't in cache (occurs for first AMQPSampler with this key)
+        		if(channel == null) {
+            		channel = createChannel();
+            		log.info("Caching new channel for connection " + cnxkey);
+            		channelCache.set(cnxkey, channel);
+            		setChannel(channel);
+            		
+        		} else {
+        			log.info("Recycling channel for connection " + cnxkey);
+        			setChannel(channel);
+        		}
+        	} else { // create a new dedicated connection and channel for current AMQPSampler instance
+        		channel = createChannel();
+        		setChannel(channel);        		
+        	}
 
             //TODO: Break out queue binding
             boolean queueConfigured = (getQueue() != null && !getQueue().isEmpty());
@@ -289,6 +313,17 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return getPropertyAsBoolean(SSL);
     }
 
+    public void setShareChannel(String content) {
+        setProperty(SHARE_CHANNEL, content);
+    }
+
+    public void setShareChannel(Boolean value) {
+        setProperty(SHARE_CHANNEL, value.toString());
+    }
+
+    public boolean shareChannel() {
+        return getPropertyAsBoolean(SHARE_CHANNEL);
+    }
 
     public String getUsername() {
         return getPropertyAsString(USERNAME);
@@ -374,10 +409,16 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     }
 
     protected void cleanup() {
+
         try {
             //getChannel().close();   // closing the connection will close the channel if it's still open
-            if(connection != null && connection.isOpen())
-                connection.close();
+        	// When shareChannel is enabled, this will close connection
+        	// used by other samplers (their cleanup code won't complete normally)
+        	synchronized(getChannel()) {
+	       		log.info("closing connection: "+connection);
+	            if(connection != null && connection.isOpen())
+	                connection.close();
+        	}
         } catch (IOException e) {
             log.error("Failed to close connection", e);
         }
