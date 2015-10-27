@@ -200,13 +200,13 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     public void setMessageId(String content) {
         setProperty(MESSAGE_ID, content);
-    }
+    }    
 
     public Arguments getHeaders() {
         return (Arguments) getProperty(HEADERS).getObjectValue();
     }
 
-    public void setHeaders(Arguments headers) {
+	public void setHeaders(Arguments headers) {
         setProperty(new TestElementProperty(HEADERS, headers));
     }
 
