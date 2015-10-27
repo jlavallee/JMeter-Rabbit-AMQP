@@ -2,6 +2,8 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 import java.security.*;
 
 import com.rabbitmq.client.*;
@@ -66,6 +68,8 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 	private transient ConnectionFactory factory;
 	private transient Connection connection;
 
+	private Pattern digitalP = Pattern.compile("\\d+");
+
 	protected AMQPSampler() {
 		factory = new ConnectionFactory();
 		factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
@@ -115,14 +119,25 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 	}
 
 	private Map<String, Object> getQueueArguments() {
+
 		Map<String, Object> arguments = new HashMap<String, Object>();
 
-		if (getMessageTTL() != null && !getMessageTTL().isEmpty())
-			arguments.put("x-message-ttl", getMessageTTLAsInt());
-
+		if (getMessageTTL() != null && !getMessageTTL().isEmpty()) {
+			Long ttl = getMessageTTLAsLong();
+			if (ttl != null) {
+				arguments.put("x-message-ttl", getMessageTTLAsLong());
+			}
+		}
 		if (getMessageExpires() != null && !getMessageExpires().isEmpty())
-			arguments.put("x-expires", getMessageExpiresAsInt());
-		arguments.putAll(getQueueParameters().getArgumentsAsMap());
+			arguments.put("x-expires", getMessageExpiresAsLong());
+		Map<String, String> map = getQueueParameters().getArgumentsAsMap();
+		for (Entry<String, String> entry : map.entrySet()) {
+			if (digitalP.matcher(entry.getValue()).matches()) {
+				arguments.put(entry.getKey(), new Long(entry.getValue()));
+			} else {
+				arguments.put(entry.getKey(), entry.getValue());
+			}
+		}
 		return arguments;
 	}
 
@@ -153,7 +168,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 	public boolean getAutoDelete() {
 		return getPropertyAsBoolean(EXCHANGE_AUTO_DELETE, DEFAULT_EXCHANGE_AUTO_DELETE);
 	}
-	
+
 	public void setExchangeAutoDelete(boolean autoDelete) {
 		setProperty(EXCHANGE_AUTO_DELETE, autoDelete);
 	}
@@ -161,7 +176,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 	public boolean getInternal() {
 		return getPropertyAsBoolean(EXCHANGE_INTERNAL, DEFAULT_EXCHANGE_INTERNAL);
 	}
-	
+
 	public void setInternal(boolean internal) {
 		setProperty(EXCHANGE_INTERNAL, internal);
 	}
@@ -266,11 +281,12 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 		setProperty(MESSAGE_TTL, name);
 	}
 
-	protected Integer getMessageTTLAsInt() {
-		if (getPropertyAsInt(MESSAGE_TTL) < 1) {
+	protected Long getMessageTTLAsLong() {
+		String ttl = getMessageTTL();
+		if (ttl == null || ttl.isEmpty()) {
 			return null;
 		}
-		return getPropertyAsInt(MESSAGE_TTL);
+		return getPropertyAsLong(MESSAGE_TTL);
 	}
 
 	public String getMessageExpires() {
@@ -281,11 +297,11 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 		setProperty(MESSAGE_EXPIRES, name);
 	}
 
-	protected Integer getMessageExpiresAsInt() {
-		if (getPropertyAsInt(MESSAGE_EXPIRES) < 1) {
+	protected Long getMessageExpiresAsLong() {
+		if (getPropertyAsLong(MESSAGE_EXPIRES) < 1) {
 			return null;
 		}
-		return getPropertyAsInt(MESSAGE_EXPIRES);
+		return getPropertyAsLong(MESSAGE_EXPIRES);
 	}
 
 	public String getHost() {
@@ -433,6 +449,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 			factory.setVirtualHost(getVirtualHost());
 			factory.setUsername(getUsername());
 			factory.setPassword(getPassword());
+			factory.setNetworkRecoveryInterval(30000);
 			if (connectionSSL()) {
 				factory.useSslProtocol("TLS");
 			}
