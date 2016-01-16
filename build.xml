@@ -22,6 +22,9 @@
   <property name="dest.dir" value="target/dist"/>
   <property name="lib.dir" value="lib"/>
 
+  <path id="lib">
+    <pathelement location="${lib.dir}" />
+  </path>
   <!-- Compilation parameters -->
   <property name="optimize" value="on"/>
   <property name="deprecation" value="off"/>
@@ -37,7 +40,7 @@
   <target name="compile"  depends="resolve-dependencies" description="Compile.">
       <echo>Compiling</echo>
     <mkdir dir="${build.dir}"/>
-    <javac classpathref="lib.path.id" srcdir="${src.dir}" destdir="${build.dir}" optimize="${optimize}" source="${src.java.version}" debug="on" target="${target.java.version}" includeAntRuntime="${includeAntRuntime}" deprecation="${deprecation}" encoding="${encoding}">
+    <javac classpathref="lib" srcdir="${src.dir}" destdir="${build.dir}" optimize="${optimize}" source="${src.java.version}" debug="on" target="${target.java.version}" includeAntRuntime="${includeAntRuntime}" deprecation="${deprecation}" encoding="${encoding}">
       <include name="**/*.java"/>
       <include name="**/*.properties"/>
       <classpath>
@@ -53,7 +56,7 @@
   <target name="resolve-dependencies"  depends="install-ivy" description="Resolving Dependencies.">
       <echo>Resolving properties</echo>
       <ivy:resolve/>
-      <ivy:cachepath pathid="lib.path.id" conf="build"/> 
+      <ivy:cachepath pathid="lib" conf="build"/> 
   </target>
   
   <target name="install-ivy" depends="download-ivy" description="Installing Ivy">
