@@ -117,7 +117,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void modifyTestElement(TestElement element) {
         AMQPSampler sampler = (AMQPSampler) element;
         sampler.clear();

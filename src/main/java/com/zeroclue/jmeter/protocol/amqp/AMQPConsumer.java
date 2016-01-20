@@ -2,6 +2,7 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
 import java.security.*;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
@@ -43,7 +44,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     /**
      * {@inheritDoc}
      */
-    @Override
     public SampleResult sample(Entry entry) {
         SampleResult result = new SampleResult();
         result.setSampleLabel(getName());
@@ -57,7 +57,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
 
            // only do this once per thread. Otherwise it slows down the consumption by appx 50%
             if (consumer == null) {
-                log.info("Creating consumer");
+                log.info("Creating consumer");                
                 consumer = new QueueingConsumer(channel);
             }
             if (consumerTag == null) {
@@ -137,7 +137,16 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
             log.warn("AMQP consumer failed to consume", e);
             result.setResponseCode("100");
             result.setResponseMessage(e.getMessage());
-        } finally {
+        } catch (Exception e) {
+        	e.printStackTrace();
+        	consumer = null;
+            consumerTag = null;
+            log.warn("AMQP consumer failed to consume", e);
+            result.setResponseCode("100");
+            result.setResponseMessage(e.getMessage());
+            
+        }
+        finally {
             result.sampleEnd(); // End timimg
         }
 
@@ -251,7 +260,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
 
 
 
-    @Override
     public boolean interrupt() {
         testEnded();
         return true;
@@ -260,7 +268,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     /**
      * {@inheritDoc}
      */
-    @Override
     public void testEnded() {
 
         if(purgeQueue()){
@@ -273,17 +280,14 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         }
     }
 
-    @Override
     public void testEnded(String arg0) {
 
     }
 
-    @Override
     public void testStarted() {
 
     }
 
-    @Override
     public void testStarted(String arg0) {
 
     }
@@ -312,7 +316,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         log.debug(tn + " " + tl + " " + s + " " + th);
     }
 
-    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         boolean ret = super.initChannel();
         channel.basicQos(getPrefetchCountAsInt());
         return ret;

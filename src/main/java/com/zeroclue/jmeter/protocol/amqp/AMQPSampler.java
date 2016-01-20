@@ -2,6 +2,7 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 import java.security.*;
 
 import com.rabbitmq.client.*;
@@ -62,7 +63,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
     }
 
-    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         Channel channel = getChannel();
 
         if(channel != null && !channel.isOpen()){
@@ -383,18 +384,16 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
     }
 
-    @Override
     public void threadFinished() {
         log.info("AMQPSampler.threadFinished called");
         cleanup();
     }
 
-    @Override
     public void threadStarted() {
 
     }
 
-    protected Channel createChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected Channel createChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
 
          if (connection == null || !connection.isOpen()) {
@@ -433,7 +432,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return channel;
     }
 
-    protected void deleteQueue() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected void deleteQueue() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {
@@ -451,7 +450,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
     }
 
-    protected void deleteExchange() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected void deleteExchange() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {

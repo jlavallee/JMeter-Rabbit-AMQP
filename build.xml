@@ -52,6 +52,11 @@
 
   <target name="resolve-dependencies"  depends="install-ivy" description="Resolving Dependencies.">
       <echo>Resolving properties</echo>
+	  <ivy:makepom ivyfile="ivy.xml" pomfile="module.pom">
+        <mapping conf="default" scope="compile"/>
+        <mapping conf="runtime" scope="runtime"/>
+      </ivy:makepom>
+	  
       <ivy:resolve/>
       <ivy:cachepath pathid="lib.path.id" conf="build"/> 
   </target>
