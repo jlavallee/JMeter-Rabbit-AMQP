@@ -1,21 +1,24 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
-import java.io.IOException;
-import java.util.*;
-import java.security.*;
-
 import com.rabbitmq.client.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.testelement.ThreadListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.rabbitmq.client.AMQP.BasicProperties;
-import org.apache.commons.lang3.StringUtils;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
 
     public static final boolean DEFAULT_EXCHANGE_DURABLE = true;
+    public static final boolean DEFAULT_EXCHANGE_AUTO_DELETE = true;
     public static final boolean DEFAULT_EXCHANGE_REDECLARE = false;
     public static final boolean DEFAULT_QUEUE_REDECLARE = false;
 
@@ -35,6 +38,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     protected static final String EXCHANGE = "AMQPSampler.Exchange";
     protected static final String EXCHANGE_TYPE = "AMQPSampler.ExchangeType";
     protected static final String EXCHANGE_DURABLE = "AMQPSampler.ExchangeDurable";
+    protected static final String EXCHANGE_AUTO_DELETE = "AMQPSampler.ExchangeAutoDelete";
     protected static final String EXCHANGE_REDECLARE = "AMQPSampler.ExchangeRedeclare";
     protected static final String QUEUE = "AMQPSampler.Queue";
     protected static final String ROUTING_KEY = "AMQPSampler.RoutingKey";
@@ -91,7 +95,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
                     deleteExchange();
                 }
 
-                AMQP.Exchange.DeclareOk declareExchangeResp = channel.exchangeDeclare(getExchange(), getExchangeType(), getExchangeDurable());
+                AMQP.Exchange.DeclareOk declareExchangeResp = channel.exchangeDeclare(getExchange(), getExchangeType(), getExchangeDurable(), getExchangeAutoDelete(), Collections.<String, Object>emptyMap());
                 if (queueConfigured) {
                     channel.queueBind(getQueue(), getExchange(), getRoutingKey());
                 }
@@ -176,6 +180,13 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         setProperty(EXCHANGE_DURABLE, durable);
     }
 
+    public boolean getExchangeAutoDelete() {
+        return getPropertyAsBoolean(EXCHANGE_AUTO_DELETE);
+    }
+
+    public void setExchangeAutoDelete(boolean autoDelete) {
+        setProperty(EXCHANGE_AUTO_DELETE, autoDelete);
+    }
 
     public String getExchangeType() {
         return getPropertyAsString(EXCHANGE_TYPE);
