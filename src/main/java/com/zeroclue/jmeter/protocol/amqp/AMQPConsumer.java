@@ -104,7 +104,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
                     JSONObject message = toJson(messageProperties, messageBody);
                     result.setSamplerData(message.toString());
 
-                    result.setResponseData(messageBody, null);
+                    //result.setResponseData(messageBody, null);
                 }
                 else {
                     result.setSamplerData("Read response is false.");
@@ -114,7 +114,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
 
-            //result.setResponseData("OK", null);
+            result.setResponseData("OK", null);
             result.setDataType(SampleResult.TEXT);
 
             result.setResponseCodeOK();
