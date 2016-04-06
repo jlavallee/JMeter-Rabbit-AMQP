@@ -5,7 +5,6 @@ import com.rabbitmq.client.AMQP;
 import java.io.IOException;
 import java.security.*;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
@@ -59,6 +58,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     /**
      * {@inheritDoc}
      */
+    @Override
     public SampleResult sample(Entry e) {
         SampleResult result = new SampleResult();
         result.setSampleLabel(getName());
@@ -226,6 +226,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
        setProperty(USE_TX, tx);
     }
 
+    @Override
     public boolean interrupt() {
         cleanup();
         return true;
@@ -261,7 +262,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         return builder.build();
     }
 
-    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         boolean ret = super.initChannel();
         if (getUseTx()) {
             channel.txSelect();

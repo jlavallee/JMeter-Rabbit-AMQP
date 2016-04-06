@@ -53,6 +53,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getLabelResource() {
         return this.getClass().getSimpleName();
     }
@@ -87,6 +88,7 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
+    @Override
     public TestElement createTestElement() {
         AMQPPublisher sampler = new AMQPPublisher();
         modifyTestElement(sampler);

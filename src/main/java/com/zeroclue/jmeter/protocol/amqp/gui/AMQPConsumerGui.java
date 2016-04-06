@@ -80,6 +80,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
+    @Override
     public TestElement createTestElement() {
         AMQPConsumer sampler = new AMQPConsumer();
         modifyTestElement(sampler);
@@ -109,6 +110,7 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getLabelResource() {
         return this.getClass().getSimpleName();
     }
