@@ -49,7 +49,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void configure(TestElement element) {
         super.configure(element);
         if (!(element instanceof AMQPSampler)) return;
@@ -84,7 +83,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void clearGui() {
         exchange.setText("jmeterExchange");
         queue.setText("jmeterQueue");
@@ -115,7 +113,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void modifyTestElement(TestElement element) {
         AMQPSampler sampler = (AMQPSampler) element;
         sampler.clear();

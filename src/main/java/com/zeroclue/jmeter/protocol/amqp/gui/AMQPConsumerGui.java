@@ -1,13 +1,10 @@
 package com.zeroclue.jmeter.protocol.amqp.gui;
 
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-
+import com.zeroclue.jmeter.protocol.amqp.AMQPConsumer;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.gui.JLabeledTextField;
 
-import com.zeroclue.jmeter.protocol.amqp.AMQPConsumer;
-
+import javax.swing.*;
 import java.awt.*;
 
 
@@ -43,7 +40,6 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
         mainPanel.add(autoAck);
     }
 
-    @Override
     public String getStaticLabel() {
         return "AMQP Consumer";
     }
@@ -51,7 +47,6 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void configure(TestElement element) {
         super.configure(element);
         if (!(element instanceof AMQPConsumer)) return;
@@ -67,7 +62,6 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void clearGui() {
         super.clearGui();
         readResponse.setSelected(AMQPConsumer.DEFAULT_READ_RESPONSE);
@@ -80,7 +74,6 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public TestElement createTestElement() {
         AMQPConsumer sampler = new AMQPConsumer();
         modifyTestElement(sampler);
@@ -90,7 +83,6 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void modifyTestElement(TestElement te) {
         AMQPConsumer sampler = (AMQPConsumer) te;
         sampler.clear();
@@ -110,15 +102,12 @@ public class AMQPConsumerGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public String getLabelResource() {
         return this.getClass().getSimpleName();
     }
 
-    @Override
     protected void setMainPanel(JPanel panel) {
         mainPanel = panel;
     }
-
 
 }

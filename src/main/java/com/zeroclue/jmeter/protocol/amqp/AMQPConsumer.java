@@ -11,12 +11,14 @@ import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testelement.TestStateListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStateListener {
     private static final int DEFAULT_PREFETCH_COUNT = 0; // unlimited
@@ -46,7 +48,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     /**
      * {@inheritDoc}
      */
-    @Override
     public SampleResult sample(Entry entry) {
         SampleResult result = new SampleResult();
         result.setSampleLabel(getName());
@@ -95,12 +96,13 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
                  * Set up the sample result details
                  */
                 if (getReadResponseAsBoolean()) {
-                    BasicProperties messageProperties = delivery.getProperties();
                     String messageBody = new String(delivery.getBody());
-                    JSONObject message = toJson(messageProperties, messageBody);
-
-                    result.setSamplerData(message.toString());
+                    //result.setSamplerData(messageBody);
                     result.setResponseMessage(messageBody);
+
+                    BasicProperties messageProperties = delivery.getProperties();
+                    JSONObject message = toJson(messageProperties, messageBody);
+                    result.setSamplerData(message.toString());
 
                     result.setResponseData(messageBody, null);
                 }
@@ -140,6 +142,13 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
             result.setResponseCode("200");
             result.setResponseMessage(e.getMessage());
         } catch (IOException e) {
+            consumer = null;
+            consumerTag = null;
+            log.warn("AMQP consumer failed to consume", e);
+            result.setResponseCode("100");
+            result.setResponseMessage(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
             consumer = null;
             consumerTag = null;
             log.warn("AMQP consumer failed to consume", e);
@@ -257,9 +266,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         return getPropertyAsBoolean(READ_RESPONSE);
     }
 
-
-
-    @Override
     public boolean interrupt() {
         testEnded();
         return true;
@@ -268,7 +274,6 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     /**
      * {@inheritDoc}
      */
-    @Override
     public void testEnded() {
 
         if(purgeQueue()){
@@ -281,17 +286,14 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         }
     }
 
-    @Override
     public void testEnded(String arg0) {
 
     }
 
-    @Override
     public void testStarted() {
 
     }
 
-    @Override
     public void testStarted(String arg0) {
 
     }
@@ -310,7 +312,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
 
     }
 
-    private JSONObject toJson(BasicProperties messageProperties, String messageBody) {
+    private JSONObject toJson(BasicProperties messageProperties, String messageBody) throws JSONException {
         JSONObject headers = new JSONObject();
         for (Map.Entry<String, Object> header : messageProperties.getHeaders().entrySet()) {
             headers.put(header.getKey(), header.getValue().toString());
@@ -331,7 +333,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
           .put("priority", messageProperties.getPriority())
           .put("replyTo", messageProperties.getReplyTo())
           .put("timestamp", messageProperties.getTimestamp())
-          .put("type", messageProperties.getType())  
+          .put("type", messageProperties.getType())
           .put("userId", messageProperties.getUserId());
     }
 
@@ -345,7 +347,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         log.debug(tn + " " + tl + " " + s + " " + th);
     }
 
-    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         boolean ret = super.initChannel();
         channel.basicQos(getPrefetchCountAsInt());
         return ret;

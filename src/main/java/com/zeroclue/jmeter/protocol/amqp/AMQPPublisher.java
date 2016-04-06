@@ -1,11 +1,7 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import com.rabbitmq.client.AMQP;
-
-import java.io.IOException;
-import java.security.*;
-import java.util.*;
-
+import com.rabbitmq.client.Channel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.samplers.Entry;
@@ -15,7 +11,13 @@ import org.apache.jmeter.testelement.property.TestElementProperty;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.rabbitmq.client.Channel;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
 
 /**
  * JMeter creates an instance of a sampler class for every occurrence of the
@@ -58,7 +60,6 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     /**
      * {@inheritDoc}
      */
-    @Override
     public SampleResult sample(Entry e) {
         SampleResult result = new SampleResult();
         result.setSampleLabel(getName());
@@ -226,18 +227,15 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
        setProperty(USE_TX, tx);
     }
 
-    @Override
     public boolean interrupt() {
         cleanup();
         return true;
     }
 
-    @Override
     protected Channel getChannel() {
         return channel;
     }
 
-    @Override
     protected void setChannel(Channel channel) {
         this.channel = channel;
     }
@@ -262,7 +260,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         return builder.build();
     }
 
-    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         boolean ret = super.initChannel();
         if (getUseTx()) {
             channel.txSelect();
