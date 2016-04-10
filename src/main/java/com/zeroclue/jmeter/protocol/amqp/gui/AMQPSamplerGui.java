@@ -1,21 +1,16 @@
 package com.zeroclue.jmeter.protocol.amqp.gui;
 
-import java.awt.*;
-
-import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-
+import com.zeroclue.jmeter.protocol.amqp.AMQPSampler;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
-import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.gui.JLabeledChoice;
 import org.apache.jorphan.gui.JLabeledTextField;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.zeroclue.jmeter.protocol.amqp.AMQPSampler;
+import javax.swing.*;
+import java.awt.*;
 
 public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
@@ -30,6 +25,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField virtualHost = new JLabeledTextField("Virtual Host");
     protected JLabeledTextField messageTTL = new JLabeledTextField("Message TTL");
     protected JLabeledTextField messageExpires = new JLabeledTextField("Expires");
+    protected JLabeledTextField xDeadLetterExchange = new JLabeledTextField("x-dead-letter-exchange");
     protected JLabeledChoice exchangeType = new JLabeledChoice("Exchange Type", new String[]{ "direct", "topic", "headers", "fanout"});
     private final JCheckBox exchangeDurable = new JCheckBox("Durable?", AMQPSampler.DEFAULT_EXCHANGE_DURABLE);
     private final JCheckBox queueDurable = new JCheckBox("Durable?", true);
@@ -53,7 +49,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void configure(TestElement element) {
         super.configure(element);
         if (!(element instanceof AMQPSampler)) return;
@@ -68,6 +63,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         virtualHost.setText(sampler.getVirtualHost());
         messageTTL.setText(sampler.getMessageTTL());
         messageExpires.setText(sampler.getMessageExpires());
+        xDeadLetterExchange.setText(sampler.getXDeadLetterExchange());
         queueDurable.setSelected(sampler.queueDurable());
         queueExclusive.setSelected(sampler.queueExclusive());
         queueAutoDelete.setSelected(sampler.queueAutoDelete());
@@ -87,7 +83,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void clearGui() {
         exchange.setText("jmeterExchange");
         queue.setText("jmeterQueue");
@@ -97,6 +92,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         virtualHost.setText("/");
         messageTTL.setText("");
         messageExpires.setText("");
+        xDeadLetterExchange.setText("");
         exchangeType.setText("direct");
         queueDurable.setSelected(true);
         queueExclusive.setSelected(false);
@@ -117,7 +113,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void modifyTestElement(TestElement element) {
         AMQPSampler sampler = (AMQPSampler) element;
         sampler.clear();
@@ -131,6 +126,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setVirtualHost(virtualHost.getText());
         sampler.setMessageTTL(messageTTL.getText());
         sampler.setMessageExpires(messageExpires.getText());
+        sampler.setXDeadLetterExchange(xDeadLetterExchange.getText());
         sampler.setExchangeType(exchangeType.getText());
         sampler.setQueueDurable(queueDurable.isSelected());
         sampler.setQueueExclusive(queueExclusive.isSelected());
@@ -218,6 +214,10 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         queueSettings.add(messageExpires, gridBagConstraints);
+
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        queueSettings.add(xDeadLetterExchange, gridBagConstraints);
 
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

@@ -1,17 +1,19 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
-import java.io.IOException;
-import java.util.*;
-import java.security.*;
-
 import com.rabbitmq.client.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.samplers.AbstractSampler;
 import org.apache.jmeter.testelement.ThreadListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.rabbitmq.client.AMQP.BasicProperties;
-import org.apache.commons.lang3.StringUtils;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public abstract class AMQPSampler extends AbstractSampler implements ThreadListener {
 
@@ -48,6 +50,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     private static final String ITERATIONS = "AMQPSampler.Iterations";
     private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
     private static final String MESSAGE_EXPIRES = "AMQPSampler.MessageExpires";
+    private static final String X_DEAD_LETTER_EXCHANGE = "AMQPSampler.XDeadLetterExchange";
     private static final String QUEUE_DURABLE = "AMQPSampler.QueueDurable";
     private static final String QUEUE_REDECLARE = "AMQPSampler.Redeclare";
     private static final String QUEUE_EXCLUSIVE = "AMQPSampler.QueueExclusive";
@@ -62,7 +65,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
     }
 
-    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         Channel channel = getChannel();
 
         if(channel != null && !channel.isOpen()){
@@ -96,7 +99,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
                     channel.queueBind(getQueue(), getExchange(), getRoutingKey());
                 }
             }
-
+            //channel.queueBind(getQueue(), getExchange(), getRoutingKey());
         log.info("bound to:"
                 +"\n\t queue: " + getQueue()
                 +"\n\t exchange: " + getExchange()
@@ -117,6 +120,9 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
         if(getMessageExpires() != null && !getMessageExpires().isEmpty())
             arguments.put("x-expires", getMessageExpiresAsInt());
+
+        if(getXDeadLetterExchange() != null && !getXDeadLetterExchange().isEmpty())
+            arguments.put("x-dead-letter-exchange", getXDeadLetterExchange());
 
         return arguments;
     }
@@ -236,13 +242,20 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return getPropertyAsInt(MESSAGE_TTL);
     }
 
-
     public String getMessageExpires() {
         return getPropertyAsString(MESSAGE_EXPIRES);
     }
 
+    public String getXDeadLetterExchange() {
+        return getPropertyAsString(X_DEAD_LETTER_EXCHANGE);
+    }
+
     public void setMessageExpires(String name) {
         setProperty(MESSAGE_EXPIRES, name);
+    }
+
+    public void setXDeadLetterExchange(String name) {
+        setProperty(X_DEAD_LETTER_EXCHANGE, name);
     }
 
     protected Integer getMessageExpiresAsInt() {
@@ -251,7 +264,6 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
         return getPropertyAsInt(MESSAGE_EXPIRES);
     }
-
 
     public String getHost() {
         return getPropertyAsString(HOST);
@@ -364,7 +376,6 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return getPropertyAsBoolean(QUEUE_AUTO_DELETE);
     }
 
-
     public Boolean getQueueRedeclare() {
         return getPropertyAsBoolean(QUEUE_REDECLARE);
     }
@@ -383,18 +394,16 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
     }
 
-    @Override
     public void threadFinished() {
         log.info("AMQPSampler.threadFinished called");
         cleanup();
     }
 
-    @Override
     public void threadStarted() {
 
     }
 
-    protected Channel createChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected Channel createChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         log.info("Creating channel " + getVirtualHost()+":"+getPortAsInt());
 
          if (connection == null || !connection.isOpen()) {
@@ -433,7 +442,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return channel;
     }
 
-    protected void deleteQueue() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected void deleteQueue() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {
@@ -451,7 +460,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         }
     }
 
-    protected void deleteExchange() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected void deleteExchange() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         // use a different channel since channel closes on exception.
         Channel channel = createChannel();
         try {

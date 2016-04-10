@@ -1,16 +1,14 @@
 package com.zeroclue.jmeter.protocol.amqp.gui;
 
-import java.awt.Dimension;
-
-import javax.swing.*;
-
+import com.zeroclue.jmeter.protocol.amqp.AMQPPublisher;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.config.gui.ArgumentsPanel;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.gui.JLabeledTextArea;
 import org.apache.jorphan.gui.JLabeledTextField;
 
-import com.zeroclue.jmeter.protocol.amqp.AMQPPublisher;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * AMQP Sampler
@@ -53,12 +51,10 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public String getLabelResource() {
         return this.getClass().getSimpleName();
     }
 
-    @Override
     public String getStaticLabel() {
         return "AMQP Publisher";
     }
@@ -66,7 +62,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void configure(TestElement element) {
         super.configure(element);
         if (!(element instanceof AMQPPublisher)) return;
@@ -88,7 +83,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public TestElement createTestElement() {
         AMQPPublisher sampler = new AMQPPublisher();
         modifyTestElement(sampler);
@@ -98,7 +92,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void modifyTestElement(TestElement te) {
         AMQPPublisher sampler = (AMQPPublisher) te;
         sampler.clear();
@@ -119,7 +112,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         sampler.setHeaders((Arguments) headers.createTestElement());
     }
 
-    @Override
     protected void setMainPanel(JPanel panel){
         mainPanel = panel;
     }
@@ -127,7 +119,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /*
      * Helper method to set up the GUI screen
      */
-    @Override
     protected final void init() {
         super.init();
         persistent.setPreferredSize(new Dimension(100, 25));
@@ -155,7 +146,6 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void clearGui() {
         super.clearGui();
         persistent.setSelected(AMQPPublisher.DEFAULT_PERSISTENT);
