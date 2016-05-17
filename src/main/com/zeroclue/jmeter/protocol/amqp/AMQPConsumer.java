@@ -2,6 +2,7 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import java.io.IOException;
 import java.security.*;
+import java.util.Map;
 
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
@@ -31,6 +32,10 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     private static final String PURGE_QUEUE = "AMQPConsumer.PurgeQueue";
     private static final String AUTO_ACK = "AMQPConsumer.AutoAck";
     private static final String RECEIVE_TIMEOUT = "AMQPConsumer.ReceiveTimeout";
+    public static final String TIMESTAMP_PARAMETER = "Timestamp";
+    public static final String EXCHANGE_PARAMETER = "Exchange";
+    public static final String ROUTING_KEY_PARAMETER = "Routing Key";
+    public static final String DELIVERY_TAG_PARAMETER = "Delivery Tag";
 
     private transient Channel channel;
     private transient QueueingConsumer consumer;
@@ -55,7 +60,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         try {
             initChannel();
 
-           // only do this once per thread. Otherwise it slows down the consumption by appx 50%
+            // only do this once per thread. Otherwise it slows down the consumption by appx 50%
             if (consumer == null) {
                 log.info("Creating consumer");
                 consumer = new QueueingConsumer(channel);
@@ -103,9 +108,10 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
                 if(!autoAck())
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
-
             result.setResponseData("OK", null);
             result.setDataType(SampleResult.TEXT);
+            result.setResponseHeaders(delivery != null ? formatHeaders(delivery) : null);
+
 
             result.setResponseCodeOK();
 
@@ -215,7 +221,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     }
 
     public void setPrefetchCount(String prefetchCount) {
-       setProperty(PREFETCH_COUNT, prefetchCount);
+        setProperty(PREFETCH_COUNT, prefetchCount);
     }
 
     public int getPrefetchCountAsInt() {
@@ -292,7 +298,7 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
 
         try {
             if (consumerTag != null) {
-               channel.basicCancel(consumerTag);
+                channel.basicCancel(consumerTag);
             }
         } catch(IOException e) {
             log.error("Couldn't safely cancel the sample " + consumerTag, e);
@@ -316,5 +322,21 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         boolean ret = super.initChannel();
         channel.basicQos(getPrefetchCountAsInt());
         return ret;
+    }
+
+    private String formatHeaders(QueueingConsumer.Delivery delivery){
+        Map<String, Object> headers = delivery.getProperties().getHeaders();
+        StringBuilder sb = new StringBuilder();
+        sb.append(TIMESTAMP_PARAMETER).append(": ")
+                .append(delivery.getProperties().getTimestamp() != null && delivery.getProperties().getTimestamp() != null ?
+                        delivery.getProperties().getTimestamp().getTime() : "")
+                .append("\n");
+        sb.append(EXCHANGE_PARAMETER).append(": ").append(delivery.getEnvelope().getExchange()).append("\n");
+        sb.append(ROUTING_KEY_PARAMETER).append(": ").append(delivery.getEnvelope().getRoutingKey()).append("\n");
+        sb.append(DELIVERY_TAG_PARAMETER).append(": ").append(delivery.getEnvelope().getDeliveryTag()).append("\n");
+        for (String key : headers.keySet()) {
+            sb.append(key).append(": ").append(headers.get(key)).append("\n");
+        }
+        return sb.toString();
     }
 }
