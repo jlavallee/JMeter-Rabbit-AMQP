@@ -256,7 +256,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             .type(getMessageType())
             .headers(prepareHeaders())
             .build();
-        if (getMessageId() != null && getMessageId().isEmpty()) {
+        if (getMessageId() != null && !getMessageId().isEmpty()) {
             builder.messageId(getMessageId());
         }
         return builder.build();
