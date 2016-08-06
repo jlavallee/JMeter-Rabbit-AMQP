@@ -13,3 +13,5 @@ lib/
 /ivy/
 *.iml
 .idea
+*.p12
+*.sublime-*
