@@ -1,11 +1,7 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
 import com.rabbitmq.client.AMQP;
-
-import java.io.IOException;
-import java.security.*;
-import java.util.*;
-
+import com.rabbitmq.client.Channel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.samplers.Entry;
@@ -15,7 +11,11 @@ import org.apache.jmeter.testelement.property.TestElementProperty;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.rabbitmq.client.Channel;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * JMeter creates an instance of a sampler class for every occurrence of the
@@ -44,10 +44,10 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private final static String HEADERS = "AMQPPublisher.Headers";
 
     public static boolean DEFAULT_PERSISTENT = false;
-    private final static String PERSISTENT = "AMQPConsumer.Persistent";
+    private final static String PERSISTENT = "AMQPPublisher.Persistent";
 
     public static boolean DEFAULT_USE_TX = false;
-    private final static String USE_TX = "AMQPConsumer.UseTx";
+    private final static String USE_TX = "AMQPPublisher.UseTx";
 
     private transient Channel channel;
 

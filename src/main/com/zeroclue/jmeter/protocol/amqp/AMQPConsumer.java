@@ -1,8 +1,9 @@
 package com.zeroclue.jmeter.protocol.amqp;
 
-import java.io.IOException;
-import java.security.*;
-
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConsumerCancelledException;
+import com.rabbitmq.client.QueueingConsumer;
+import com.rabbitmq.client.ShutdownSignalException;
 import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
@@ -10,10 +11,9 @@ import org.apache.jmeter.testelement.TestStateListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConsumerCancelledException;
-import com.rabbitmq.client.QueueingConsumer;
-import com.rabbitmq.client.ShutdownSignalException;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 
 public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStateListener {
     private static final int DEFAULT_PREFETCH_COUNT = 0; // unlimited
@@ -31,6 +31,9 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     private static final String PURGE_QUEUE = "AMQPConsumer.PurgeQueue";
     private static final String AUTO_ACK = "AMQPConsumer.AutoAck";
     private static final String RECEIVE_TIMEOUT = "AMQPConsumer.ReceiveTimeout";
+
+    public static boolean DEFAULT_USE_TX = false;
+    private final static String USE_TX = "AMQPConsumer.UseTx";
 
     private transient Channel channel;
     private transient QueueingConsumer consumer;
@@ -102,6 +105,11 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
 
                 if(!autoAck())
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+            }
+
+            // commit the sample.
+            if (getUseTx()) {
+                channel.txCommit();
             }
 
             result.setResponseData("OK", null);
@@ -222,6 +230,14 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         return getPropertyAsInt(PREFETCH_COUNT);
     }
 
+    public Boolean getUseTx() {
+        return getPropertyAsBoolean(USE_TX, DEFAULT_USE_TX);
+    }
+
+    public void setUseTx(Boolean tx) {
+        setProperty(USE_TX, tx);
+    }
+
     /**
      * set whether the sampler should read the response or not
      *
@@ -315,6 +331,9 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
     protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
         boolean ret = super.initChannel();
         channel.basicQos(getPrefetchCountAsInt());
+        if (getUseTx()) {
+            channel.txSelect();
+        }
         return ret;
     }
 }
