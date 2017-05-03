@@ -40,6 +40,8 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     private final static String REPLY_TO_QUEUE = "AMQPPublisher.ReplyToQueue";
     private final static String CONTENT_TYPE = "AMQPPublisher.ContentType";
     private final static String CORRELATION_ID = "AMQPPublisher.CorrelationId";
+    private final static String PRIORITY = "AMQPPublisher.Priority";
+    private final static String DELIVERY_MODE = "AMQPPublisher.DeliveryMode";
     private final static String MESSAGE_ID = "AMQPPublisher.MessageId";
     private final static String HEADERS = "AMQPPublisher.Headers";
 
@@ -175,11 +177,11 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     public String getContentType() {
     	return getPropertyAsString(CONTENT_TYPE);
     }
-    
+
     public void setContentType(String contentType) {
     	setProperty(CONTENT_TYPE, contentType);
     }
-    
+
     /**
      * @return the correlation identifier for the sample
      */
@@ -189,6 +191,36 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     public void setCorrelationId(String content) {
         setProperty(CORRELATION_ID, content);
+    }
+
+    public String getPriority() {
+        return getPropertyAsString(PRIORITY);
+    }
+
+    protected int getPriorityAsInt() {
+        if (getPropertyAsInt(PRIORITY) < 0) {
+            return 0;
+        }
+        return getPropertyAsInt(PRIORITY);
+    }
+
+    public void setPriority(String content) {
+        setProperty(PRIORITY, content);
+    }
+
+    public String getDeliveryMode() {
+        return getPropertyAsString(DELIVERY_MODE);
+    }
+
+    public void setDeliveryMode(String content) {
+        setProperty(DELIVERY_MODE, content);
+    }
+
+    protected int getDeliveryModeAsInt() {
+        if (getPropertyAsInt(DELIVERY_MODE) < 1) {
+            return 1;
+        }
+        return getPropertyAsInt(DELIVERY_MODE);
     }
 
     /**
@@ -247,11 +279,13 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
         final int deliveryMode = getPersistent() ? 2 : 1;
         final String contentType = StringUtils.defaultIfEmpty(getContentType(), "text/plain");
-        
+
         builder.contentType(contentType)
             .deliveryMode(deliveryMode)
             .priority(0)
             .correlationId(getCorrelationId())
+            .priority(getPriorityAsInt())
+            .deliveryMode(getDeliveryModeAsInt())
             .replyTo(getReplyToQueue())
             .type(getMessageType())
             .headers(prepareHeaders())

@@ -38,6 +38,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
     private JLabeledTextField messageType = new JLabeledTextField("Message Type");
     private JLabeledTextField replyToQueue = new JLabeledTextField("Reply-To Queue");
     private JLabeledTextField correlationId = new JLabeledTextField("Correlation Id");
+    private JLabeledTextField priority = new JLabeledTextField("Priority");
+    private JLabeledTextField deliveryMode = new JLabeledTextField("Delivery mode");
     private JLabeledTextField contentType = new JLabeledTextField("ContentType");
     private JLabeledTextField messageId = new JLabeledTextField("Message Id");
 
@@ -80,6 +82,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         replyToQueue.setText(sampler.getReplyToQueue());
         contentType.setText(sampler.getContentType());
         correlationId.setText(sampler.getCorrelationId());
+        priority.setText(sampler.getPriority());
+        deliveryMode.setText(sampler.getDeliveryMode());
         messageId.setText(sampler.getMessageId());
         message.setText(sampler.getMessage());
         configureHeaders(sampler);
@@ -114,6 +118,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         sampler.setMessageType(messageType.getText());
         sampler.setReplyToQueue(replyToQueue.getText());
         sampler.setCorrelationId(correlationId.getText());
+        sampler.setPriority(priority.getText());
+        sampler.setDeliveryMode(deliveryMode.getText());
         sampler.setContentType(contentType.getText());
         sampler.setMessageId(messageId.getText());
         sampler.setHeaders((Arguments) headers.createTestElement());
@@ -136,6 +142,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         messageType.setPreferredSize(new Dimension(100, 25));
         replyToQueue.setPreferredSize(new Dimension(100, 25));
         correlationId.setPreferredSize(new Dimension(100, 25));
+        priority.setPreferredSize(new Dimension(100, 25));
+        deliveryMode.setPreferredSize(new Dimension(100, 25));
         contentType.setPreferredSize(new Dimension(100, 25));
         messageId.setPreferredSize(new Dimension(100, 25));
         message.setPreferredSize(new Dimension(400, 150));
@@ -146,6 +154,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         mainPanel.add(messageType);
         mainPanel.add(replyToQueue);
         mainPanel.add(correlationId);
+        mainPanel.add(priority);
+        mainPanel.add(deliveryMode);
         mainPanel.add(contentType);
         mainPanel.add(messageId);
         mainPanel.add(headers);
@@ -164,6 +174,8 @@ public class AMQPPublisherGui extends AMQPSamplerGui {
         messageType.setText("");
         replyToQueue.setText("");
         correlationId.setText("");
+        priority.setText("");
+        deliveryMode.setText("");
         contentType.setText("");
         messageId.setText("");
         headers.clearGui();
