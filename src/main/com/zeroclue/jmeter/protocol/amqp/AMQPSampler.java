@@ -52,6 +52,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     private static final String ITERATIONS = "AMQPSampler.Iterations";
     private static final String MESSAGE_TTL = "AMQPSampler.MessageTTL";
     private static final String MESSAGE_EXPIRES = "AMQPSampler.MessageExpires";
+    private static final String X_MAX_PRIORITY = "AMQPSampler.XMaxPriority";
     private static final String QUEUE_DURABLE = "AMQPSampler.QueueDurable";
     private static final String QUEUE_REDECLARE = "AMQPSampler.Redeclare";
     private static final String QUEUE_EXCLUSIVE = "AMQPSampler.QueueExclusive";
@@ -121,6 +122,9 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
 
         if(getMessageExpires() != null && !getMessageExpires().isEmpty())
             arguments.put("x-expires", getMessageExpiresAsInt());
+
+        if(getXMaxPriority() != null && !getXMaxPriority().isEmpty())
+            arguments.put("x-max-priority", getXMaxPriorityAsInt());
 
         return arguments;
     }
@@ -261,6 +265,21 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
             return null;
         }
         return getPropertyAsInt(MESSAGE_EXPIRES);
+    }
+
+    public String getXMaxPriority() {
+        return getPropertyAsString(X_MAX_PRIORITY);
+    }
+
+    public void setXMaxPriority(String name) {
+        setProperty(X_MAX_PRIORITY, name);
+    }
+
+    protected Integer getXMaxPriorityAsInt() {
+        if (getPropertyAsInt(X_MAX_PRIORITY) < 0) {
+            return null;
+        }
+        return getPropertyAsInt(X_MAX_PRIORITY);
     }
 
 
