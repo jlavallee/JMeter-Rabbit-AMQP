@@ -354,9 +354,11 @@ public class AMQPConsumer extends AMQPSampler implements Interruptible, TestStat
         sb.append(EXCHANGE_PARAMETER).append(": ").append(delivery.getEnvelope().getExchange()).append("\n");
         sb.append(ROUTING_KEY_PARAMETER).append(": ").append(delivery.getEnvelope().getRoutingKey()).append("\n");
         sb.append(DELIVERY_TAG_PARAMETER).append(": ").append(delivery.getEnvelope().getDeliveryTag()).append("\n");
-        for (String key : headers.keySet()) {
-            sb.append(key).append(": ").append(headers.get(key)).append("\n");
-        }
+      	if(headers != null){
+      	        for (String key : headers.keySet()) {
+              	    sb.append(key).append(": ").append(headers.get(key)).append("\n");
+              	}
+      	}
         return sb.toString();
     }
 }
