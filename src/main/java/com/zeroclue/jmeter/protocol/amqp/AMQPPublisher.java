@@ -2,6 +2,12 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.samplers.Entry;
@@ -10,13 +16,6 @@ import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testelement.property.TestElementProperty;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -116,8 +115,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             log.debug(ex.getMessage(), ex);
             result.setResponseCode("000");
             result.setResponseMessage(ex.toString());
-        }
-        finally {
+        } finally {
             result.sampleEnd(); // End timimg
         }
 
@@ -174,13 +172,13 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     }
 
     public String getContentType() {
-    	return getPropertyAsString(CONTENT_TYPE);
+        return getPropertyAsString(CONTENT_TYPE);
     }
-    
+
     public void setContentType(String contentType) {
-    	setProperty(CONTENT_TYPE, contentType);
+        setProperty(CONTENT_TYPE, contentType);
     }
-    
+
     /**
      * @return the correlation identifier for the sample
      */
@@ -216,7 +214,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     }
 
     public void setPersistent(Boolean persistent) {
-       setProperty(PERSISTENT, persistent);
+        setProperty(PERSISTENT, persistent);
     }
 
     public Boolean getUseTx() {
@@ -224,7 +222,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     }
 
     public void setUseTx(Boolean tx) {
-       setProperty(USE_TX, tx);
+        setProperty(USE_TX, tx);
     }
 
     public boolean interrupt() {
@@ -240,12 +238,12 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         this.channel = channel;
     }
 
-    protected AMQP.BasicProperties getProperties() {
+    private AMQP.BasicProperties getProperties() {
         final AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
 
         final int deliveryMode = getPersistent() ? 2 : 1;
         final String contentType = StringUtils.defaultIfEmpty(getContentType(), "text/plain");
-        
+
         builder.contentType(contentType)
             .deliveryMode(deliveryMode)
             .priority(0)
@@ -254,7 +252,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
             .type(getMessageType())
             .headers(prepareHeaders())
             .build();
-        if (getMessageId() != null && getMessageId().isEmpty()) {
+        if (getMessageId() != null && getMessageId().equals("")) {
             builder.messageId(getMessageId());
         }
         return builder.build();
@@ -272,7 +270,12 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         Map<String, Object> result = new HashMap<String, Object>();
         Map<String, String> source = getHeaders().getArgumentsAsMap();
         for (Map.Entry<String, String> item : source.entrySet()) {
-            result.put(item.getKey(), item.getValue());
+            if (item.getValue().contains("int")) {
+                String val = (item.getValue().split(":"))[1];
+                result.put(item.getKey(), Integer.parseInt(val));
+            } else {
+                result.put(item.getKey(), item.getValue());
+            }
         }
         return result;
     }
