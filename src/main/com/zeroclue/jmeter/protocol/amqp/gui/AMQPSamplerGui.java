@@ -1,6 +1,8 @@
 package com.zeroclue.jmeter.protocol.amqp.gui;
 
 import com.zeroclue.jmeter.protocol.amqp.AMQPSampler;
+import org.apache.jmeter.config.Arguments;
+import org.apache.jmeter.config.gui.ArgumentsPanel;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
@@ -42,6 +44,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
     private final JLabeledTextField iterations = new JLabeledTextField("Number of samples to Aggregate");
 
+    private ArgumentsPanel channelArguments = new ArgumentsPanel("Channel Arguments");
 
 
     protected abstract void setMainPanel(JPanel panel);
@@ -52,7 +55,9 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     @Override
     public void configure(TestElement element) {
         super.configure(element);
+
         if (!(element instanceof AMQPSampler)) return;
+
         AMQPSampler sampler = (AMQPSampler) element;
 
         exchange.setText(sampler.getExchange());
@@ -78,7 +83,20 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         username.setText(sampler.getUsername());
         password.setText(sampler.getPassword());
         SSL.setSelected(sampler.connectionSSL());
+
+        configureChannelArguments(sampler);
+
         log.info("AMQPSamplerGui.configure() called");
+    }
+
+    private void configureChannelArguments(AMQPSampler sampler)
+    {
+        Arguments sampleChannelArguments = sampler.getChannelArguments();
+        if (sampleChannelArguments != null) {
+            channelArguments.configure(sampleChannelArguments);
+        } else {
+            channelArguments.clearGui();
+        }
     }
 
     /**
@@ -110,6 +128,8 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         username.setText("guest");
         password.setText("guest");
         SSL.setSelected(false);
+
+        channelArguments.clearGui();
     }
 
     /**
@@ -145,6 +165,8 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setPassword(password.getText());
         sampler.setConnectionSSL(SSL.isSelected());
         log.info("AMQPSamplerGui.modifyTestElement() called, set user/pass to " + username.getText() + "/" + password.getText() + " on sampler " + sampler);
+
+        sampler.setChannelArguments((Arguments) channelArguments.createTestElement());
     }
 
     protected void init() {
@@ -244,6 +266,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         JPanel exchangeQueueSettings = new VerticalPanel();
         exchangeQueueSettings.add(exchangeSettings);
         exchangeQueueSettings.add(queueSettings);
+        exchangeQueueSettings.add(channelArguments);
 
         commonPanel.add(exchangeQueueSettings, gridBagConstraintsCommon);
 

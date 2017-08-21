@@ -13,3 +13,5 @@ lib/
 /ivy/
 *.iml
 .idea
+/vendor
+/.mk
