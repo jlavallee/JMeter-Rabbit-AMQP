@@ -17,5 +17,6 @@
         <dependency org="avalon-logkit" name="avalon-logkit" rev="2.0" conf="build->default"/>
         <dependency org="com.rabbitmq" name="amqp-client" rev="3.5.1" conf="build->default"/>
         <dependency org="org.apache.jmeter" name="ApacheJMeter_core" rev="2.11" conf="build->default"/>
+        <dependency org="org.json" name="json" rev="20160810" conf="build->default"/>
     </dependencies>
 </ivy-module>
