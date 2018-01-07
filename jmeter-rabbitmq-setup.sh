@@ -47,8 +47,8 @@ if ! command -v java >/dev/null; then
    brew cask install java8
    javac -version  
 else
-   javac -version  
   fancy_echo "JDK already installed. Skipping."
+   javac -version  
 fi
 
 if ! command -v jmeter >/dev/null; then
@@ -57,12 +57,18 @@ if ! command -v jmeter >/dev/null; then
    export JMETER_HOME="/usr/local/Cellar/jmeter/3.3"
    echo $JMETER_HOME
    ls $JMETER_HOME
-
-   git clone https://github.com/jlavallee/JMeter-Rabbit-AMQP --depth=1
-   cd JMeter-Rabbit-AMQPelse
   fancy_echo "jmeter already installed. Skipping."
 fi
 
+// FILE="target/dist/JMeterAMQP.jar"
+if [ -f $FILE ]; then
+  fancy_echo "Cloning JMeter-Rabbit-AMQP repo ..."
+   echo $FILE
+   git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
+   cd JMeter-Rabbit-AMQPelse
+else
+  fancy_echo "JMeter-Rabbit-AMQP repo already exists ..."
+fi
 
 if ! command -v tree >/dev/null; then
   fancy_echo "Installing tree utlity ..."
@@ -70,6 +76,7 @@ if ! command -v tree >/dev/null; then
 else
   fancy_echo "tree already installed. Skipping."
 fi
+  fancy_echo "Tree ...."
    pwd
    tree -L 1
 
