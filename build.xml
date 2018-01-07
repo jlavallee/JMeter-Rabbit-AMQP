@@ -25,8 +25,8 @@
   <!-- Compilation parameters -->
   <property name="optimize" value="on"/>
   <property name="deprecation" value="off"/>
-  <property name="target.java.version" value="1.5"/>
-  <property name="src.java.version" value="1.5"/>
+  <property name="target.java.version" value="1.8"/>
+  <property name="src.java.version" value="1.8"/>
   <property name="encoding" value="UTF-8"/>
   <property name="includeAntRuntime" value="false"/>
   <property name="ivy.install.version" value="2.3.0"/>
