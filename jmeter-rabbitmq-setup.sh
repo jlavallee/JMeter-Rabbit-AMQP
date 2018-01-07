@@ -60,16 +60,17 @@ if ! command -v jmeter >/dev/null; then
   fancy_echo "jmeter already installed. Skipping."
 fi
 
-# FILE="target/dist/JMeterAMQP.jar"
+FILE="JMeter-Rabbit-AMQP"
 if [ -f $FILE ]; then
-  fancy_echo "Cloning JMeter-Rabbit-AMQP repo ..."
-   echo $FILE
+  fancy_echo "JMeter-Rabbit-AMQP folder exists, so deleting..."
+  rm -rf $FILE
+fi
+  fancy_echo "JMeter-Rabbit-AMQP repo being cloned ..."
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
    cd JMeter-Rabbit-AMQPelse
-else
-  fancy_echo "JMeter-Rabbit-AMQP repo already exists ..."
-fi
+   tree
 
+   
 if ! command -v tree >/dev/null; then
   fancy_echo "Installing tree utlity ..."
   brew install tree
