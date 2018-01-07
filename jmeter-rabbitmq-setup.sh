@@ -18,8 +18,8 @@ fancy_echo() {
 
 fancy_echo "Boostrapping ..."
 
-trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
-set -e
+#trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+#et -e
 
 # Here we go.. ask for the administrator password upfront and run a
 # keep-alive to update existing `sudo` time stamp until script has finished
@@ -60,7 +60,7 @@ if ! command -v jmeter >/dev/null; then
   fancy_echo "jmeter already installed. Skipping."
 fi
 
-// FILE="target/dist/JMeterAMQP.jar"
+# FILE="target/dist/JMeterAMQP.jar"
 if [ -f $FILE ]; then
   fancy_echo "Cloning JMeter-Rabbit-AMQP repo ..."
    echo $FILE
@@ -94,11 +94,13 @@ fi
 # If file exists:
 FILE="target/dist/JMeterAMQP.jar"
 if [ -f $FILE ]; then
+  fancy_echo "Installing JMeterAMPQ.jar ..."
    echo $FILE
    cp $FILE  $JMETER_HOME/libexec/lib/ext
    ls $JMETER_HOME/libexec/lib/ext -al
 else
-   echo "File '$FILE' not found."
+   echo "File '$FILE' not found. Aborting..."
+   exit
 fi
 
   fancy_echo "ivy running..."
