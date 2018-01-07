@@ -43,10 +43,11 @@ fi
 
 if ! command -v java >/dev/null; then
   fancy_echo "Installing JDK ..."
-   brew cask info java
-   brew install java
+   brew cask info java8
+   brew cask install java8
    javac -version  
 else
+   javac -version  
   fancy_echo "JDK already installed. Skipping."
 fi
 
@@ -104,8 +105,18 @@ else
   fancy_echo "rabbitmq-server already installed. Skipping."
 fi
 
+if [[ ":$PATH:" == *":$HOME/usr/local/sbin:"* ]]; then
+  fancy_echo "rabbitmq in path already. Skipping."
+else
+  fancy_echo "Add path of rabbitmq ..."
+   export PATH=$PATH:/usr/local/sbin
+fi
+fancy_echo "Starting Rabbitmq server ..."
+   rabbitmq-server
+
 #fancy_echo "Starting JMeter..."
 #    jmeter ???
 
+# watch run at http://localhost:15672
 
 fancy_echo "Done."
