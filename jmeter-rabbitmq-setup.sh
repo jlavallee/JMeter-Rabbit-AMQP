@@ -67,7 +67,7 @@ else
 fi
    ls $JMETER_HOME
    # jmeter -v  # with that big ASCII art banner.
-exit
+
 
 REPO1="JMeter-Rabbit-AMQP"
 echo $REPO1
