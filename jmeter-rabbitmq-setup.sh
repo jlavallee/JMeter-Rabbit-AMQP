@@ -16,10 +16,12 @@ fancy_echo() {
   printf "\n>>> $fmt\n" "$@"
 }
 
-fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
+trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+set -e
 
-#trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
-#et -e
+fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
+clear
+
 
 # Here we go.. ask for the administrator password upfront and run a
 # keep-alive to update existing `sudo` time stamp until script has finished
@@ -70,6 +72,8 @@ FILE="JMeter-Rabbit-AMQP"
 if [ -f $FILE ]; then
   fancy_echo "JMeter-Rabbit-AMQP folder exists, so deleting..."
   rm -rf $FILE
+else
+  fancy_echo "JMeter-Rabbit-AMQP folder does not exist ..."
 fi
   fancy_echo "JMeter-Rabbit-AMQP repo being cloned ..."
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
@@ -135,11 +139,12 @@ fi
 fancy_echo "Starting Rabbitmq server in background using nohup ..."
    nohup rabbitmq-server &>/dev/null &
    jobs
+   ps
    open http://localhost:15672  
 
 
-#fancy_echo "Starting JMeter..."
-#    jmeter ???
+fancy_echo "Starting JMeter in background to run test..."
+    jmeter -v
 
 
 fancy_echo "Done."
