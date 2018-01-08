@@ -2,7 +2,7 @@
 
 # jmeter-rabbitmq-setup.sh From https://github.com/wilsonmar/JMeter-Rabbit-AMQP
 # This script bootstraps a OSX laptop for development
-# See https://wilsonmar.github.io/
+# Steps here are explained in https://wilsonmar.github.io/jmeter-install/
 #    - xcode
 #    - homebrew, then via brew:
 #    - java JDK 
@@ -154,8 +154,8 @@ fi
    jobs
    ps 
 
-   open http://localhost:15672  # default port (open is Mac only command)
-pause 'Press [Enter] key to continue...'
+   #open http://localhost:15672  # default port (open is Mac only command)
+   # pause 'Press [Enter] key to continue...'
 
    fancy_echo "Starting JMeter in background to run test ..."
 #   nohup "./jmeter.sh -n -t $REPO1/bin/GamesSubscriber.jmx -l result.jtl" > /dev/null 2>&1 &
