@@ -2,8 +2,7 @@
 
 # jmeter-rabbitmq-setup.sh From https://github.com/wilsonmar/JMeter-Rabbit-AMQP
 # This script bootstraps a OSX laptop for development
-# to a point where we can run Ansible on localhost. It:
-#  1. Installs:
+# See https://wilsonmar.github.io/
 #    - xcode
 #    - homebrew, then via brew:
 #    - java JDK 
@@ -20,7 +19,8 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
-clear
+  clear
+  sw_vers
 
 
 # Here we go.. ask for the administrator password upfront and run a
@@ -35,7 +35,7 @@ if ! command -v cc >/dev/null; then
 else
   fancy_echo "Xcode already installed. Skipping install."
 fi
-sw_vers
+  xcodebuild -version
 
 
 if ! command -v brew >/dev/null; then
@@ -69,6 +69,7 @@ fi
 
 
 FILE="JMeter-Rabbit-AMQP"
+echo $FILE
 if [ -f $FILE ]; then
   fancy_echo "JMeter-Rabbit-AMQP folder exists, so deleting..."
   rm -rf $FILE
@@ -79,7 +80,7 @@ fi
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
    cd JMeter-Rabbit-AMQPelse
    tree
-
+exit
 
 if ! command -v tree >/dev/null; then
   fancy_echo "Installing tree utlity ..."
@@ -98,10 +99,12 @@ fi
 if ! command -v ant >/dev/null; then
   fancy_echo "Installing ant utlity ..."
   brew install ant
+  ant -v
 else
   fancy_echo "ant already installed. Skipping install."
+  ant -v
 fi
-  fancy_echo "ant running..."
+  fancy_echo "ant running to process ant.xml ..."
   ant
 
 
@@ -133,7 +136,7 @@ fi
 if [[ ":$PATH:" == *":$HOME/usr/local/sbin:"* ]]; then
   fancy_echo "rabbitmq in path already. Skipping install."
 else
-  fancy_echo "Add path of rabbitmq ..."
+  fancy_echo "Add path of rabbitmq /usr/local/sbin ..."
    export PATH=$PATH:/usr/local/sbin
 fi
 fancy_echo "Starting Rabbitmq server in background using nohup ..."
