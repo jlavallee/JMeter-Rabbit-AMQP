@@ -15,8 +15,8 @@ fancy_echo() {
   printf "\n>>> $fmt\n" "$@"
 }
 
-#trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
-#set -e
+trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+set -e
 
 fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
 #  clear
@@ -76,7 +76,7 @@ if [ -d $REPO1 ]; then
 else
   fancy_echo "Repo $REPO1 folder does not exist ..."
 fi
-  echo "Repo $REPO1 being cloned ..."
+  fancy_echo "Repo $REPO1 being cloned ..."
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
    cd $REPO1
    pwd
@@ -117,7 +117,7 @@ if [ -f $FILE ]; then
    cp $FILE  $JMETER_HOME/libexec/lib/ext
    ls $JMETER_HOME/libexec/lib/ext -al
 else
-   echo "File '$FILE' not found. Aborting..."
+   fancy_echo "File '$FILE' not found. Aborting..."
    exit
 fi
 
