@@ -89,7 +89,6 @@ if ! command -v tree >/dev/null; then
 else
   fancy_echo "tree already installed. Skipping install."
 fi
-   pwd
    tree -L 1
 
 
@@ -107,11 +106,11 @@ fi
   ant
 
 
-# If file exists:
 FILE="target/dist/JMeterAMQP.jar"
-if [ -f $FILE ]; then
-  fancy_echo "Installing JMeterAMPQ.jar ..."
-   echo $FILE
+if [ -f $FILE ]; then  # file exists within folder $REPO1
+  fancy_echo "Deleting previous and copying from $FILE ..."
+   ls -al    $JMETER_HOME/libexec/lib/ext | grep JMeterAMQP.jar
+   rm        $JMETER_HOME/libexec/lib/ext/JMeterAMQP.jar
    cp $FILE  $JMETER_HOME/libexec/lib/ext
    ls $JMETER_HOME/libexec/lib/ext -al
 else
@@ -142,7 +141,7 @@ fi
    nohup rabbitmq-server &>/dev/null &
    jobs
    ps
-   open http://localhost:15672  # default port.
+   open http://localhost:15672  # default port (open is Mac only command)
 
 
    fancy_echo "Starting JMeter in background to run test ..."
