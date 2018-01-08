@@ -20,12 +20,15 @@ function pause(){
 }
 
 
-# trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
-# set -e
+trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+set -e
 
 fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
 #  clear
   sw_vers
+    # ProductName:	Mac OS X
+    # ProductVersion:	10.11.6
+    # BuildVersion:	15G18013
 
 
 # Here we go.. ask for the administrator password upfront and run a
@@ -41,7 +44,8 @@ else
   fancy_echo "Xcode already installed. Skipping install."
 fi
   xcodebuild -version
-
+    # Xcode 7.3.1
+    # Build version 7D1014
 
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew for brew commands ..."
@@ -87,33 +91,6 @@ else
    cp $FILE  $FOLDER -i
 fi
 
-
-FILE="JMeterPlugins-Extras-1.2.1.zip"  # TODO: Check if version has changed since Jan 4, 2018.
-FOLDER="$JMETER_HOME/libexec/lib/ext"
-if [ -f $FOLDER/$FILE ]; then  # file exists within folder 
-   fancy_echo "$FILE already installed in $FOLDER. Skipping install."
-else
-   fancy_echo "Downloading $FILE to $FOLDER ..."
-   # From https://jmeter-plugins.org/wiki/Extras
-   curl -O http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.2.1.zip
-
-   fancy_echo "Moving $FILE to $FOLDER ..."
-   cp $FILE  $FOLDER  -i
-fi
-
-
-REPO1="JMeter-Rabbit-AMQP"
-if [ -d $REPO1 ]; then
-  fancy_echo "Repo $REPO1 folder exists, so deleting..."
-  rm -rf $REPO1
-else
-  fancy_echo "Repo $REPO1 folder does not exist ..."
-fi
-  fancy_echo "Repo $REPO1 being cloned ..."
-   git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
-   cd $REPO1
-   pwd
-   #tree
 
 
 if ! command -v tree >/dev/null; then
