@@ -120,6 +120,7 @@ else
    fancy_echo "File '$FILE' not found. Aborting..."
    exit
 fi
+pwd
 
 
   fancy_echo "ivy running..."
