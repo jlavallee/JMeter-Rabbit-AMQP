@@ -39,6 +39,7 @@ if ! command -v brew >/dev/null; then
   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" </dev/null
 else
   fancy_echo "Homebrew already installed. Skipping."
+  brew --version  # Homebrew 1.4.2
 fi
 
 if ! command -v java >/dev/null; then
@@ -70,7 +71,7 @@ fi
    cd JMeter-Rabbit-AMQPelse
    tree
 
-   
+
 if ! command -v tree >/dev/null; then
   fancy_echo "Installing tree utlity ..."
   brew install tree
