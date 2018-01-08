@@ -76,7 +76,6 @@ fi
 
 FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FOLDER="$JMETER_HOME/libexec/lib/ext"
-echo $FOLDER/$FILE
 if [ -f $FOLDER/$FILE ]; then  # file exists within folder 
    fancy_echo "$FILE already installed in $FOLDER. Skipping install."
 else
