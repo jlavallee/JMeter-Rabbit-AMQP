@@ -14,6 +14,10 @@ fancy_echo() {
   # shellcheck disable=SC2059
   printf "\n>>> $fmt\n" "$@"
 }
+function pause(){
+   read -p "$*"
+}
+
 
 trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
@@ -143,12 +147,15 @@ else
   fancy_echo "Add path of rabbitmq /usr/local/sbin ..."
    export PATH=$PATH:/usr/local/sbin
 fi
+
+
   fancy_echo "Starting Rabbitmq server in background using nohup ..."
    nohup rabbitmq-server &>/dev/null &
    jobs
-   ps
-   open http://localhost:15672  # default port (open is Mac only command)
+   ps 
 
+   open http://localhost:15672  # default port (open is Mac only command)
+pause 'Press [Enter] key to continue...'
 
    fancy_echo "Starting JMeter in background to run test ..."
 #   nohup "./jmeter.sh -n -t $REPO1/bin/GamesSubscriber.jmx -l result.jtl" > /dev/null 2>&1 &
