@@ -115,7 +115,7 @@ if [ -f $FILE ]; then  # file exists within folder $REPO1
    rm        $JMETER_HOME/libexec/lib/ext/JMeterAMQP.jar
   fancy_echo "Copying in from $FILE ..."
    cp $FILE  $JMETER_HOME/libexec/lib/ext
-   ls $JMETER_HOME/libexec/lib/ext -al
+   ls -al    $JMETER_HOME/libexec/lib/ext | grep JMeterAMQP.jar
 else
    fancy_echo "File '$FILE' not found. Aborting..."
    exit
