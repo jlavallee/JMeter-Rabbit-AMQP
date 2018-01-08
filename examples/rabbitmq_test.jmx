@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.7" jmeter="2.10-SNAPSHOT.20130504">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="RPC Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">stoptest</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">125</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">8</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">15</stringProp>
+        <longProp name="ThreadGroup.start_time">1361373100000</longProp>
+        <longProp name="ThreadGroup.end_time">1361373100000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <RandomVariableConfig guiclass="TestBeanGUI" testclass="RandomVariableConfig" testname="Reply-To Queue Name" enabled="true">
+          <stringProp name="maximumValue">999999999</stringProp>
+          <stringProp name="minimumValue">1</stringProp>
+          <stringProp name="outputFormat">000000000</stringProp>
+          <boolProp name="perThread">false</boolProp>
+          <stringProp name="randomSeed"></stringProp>
+          <stringProp name="variableName">replyToQueue</stringProp>
+        </RandomVariableConfig>
+        <hashTree/>
+        <RandomVariableConfig guiclass="TestBeanGUI" testclass="RandomVariableConfig" testname="Unique ID" enabled="true">
+          <stringProp name="variableName">uniqueId</stringProp>
+          <stringProp name="outputFormat">0000000</stringProp>
+          <stringProp name="minimumValue">1</stringProp>
+          <stringProp name="maximumValue">9999999</stringProp>
+          <stringProp name="randomSeed">3499272</stringProp>
+          <boolProp name="perThread">false</boolProp>
+        </RandomVariableConfig>
+        <hashTree/>
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="RPC Endpoint" enabled="true">
+          <boolProp name="TransactionController.parent">true</boolProp>
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+        </TransactionController>
+        <hashTree>
+          <com.zeroclue.jmeter.protocol.amqp.AMQPPublisher guiclass="com.zeroclue.jmeter.protocol.amqp.gui.AMQPPublisherGui" testclass="com.zeroclue.jmeter.protocol.amqp.AMQPPublisher" testname="RPC Request" enabled="true">
+            <stringProp name="AMQPSampler.Exchange">my_rpc_exchange</stringProp>
+            <boolProp name="AMQPSampler.ExchangeDurable">false</boolProp>
+            <boolProp name="AMQPSampler.ExchangeRedeclare">false</boolProp>
+            <stringProp name="AMQPSampler.Queue">RPCRequestQueue</stringProp>
+            <stringProp name="AMQPSampler.RoutingKey">RPCMessage.Request.v1_0</stringProp>
+            <stringProp name="AMQPSampler.VirtualHost">/</stringProp>
+            <stringProp name="AMQPSampler.MessageTTL"></stringProp>
+            <stringProp name="AMQPSampler.MessageExpires"></stringProp>
+            <stringProp name="AMQPSampler.ExchangeType">direct</stringProp>
+            <stringProp name="AMQPSampler.QueueDurable">true</stringProp>
+            <stringProp name="AMQPSampler.QueueExclusive">false</stringProp>
+            <stringProp name="AMQPSampler.QueueAutoDelete">false</stringProp>
+            <boolProp name="AMQPSampler.Redeclare">false</boolProp>
+            <stringProp name="AMQPSampler.Timeout">1000</stringProp>
+            <stringProp name="AMQPSampler.Iterations">1</stringProp>
+            <stringProp name="AMQPSampler.Host">localhost</stringProp>
+            <stringProp name="AMQPSampler.Port">5672</stringProp>
+            <stringProp name="AMQPSampler.Username">guest</stringProp>
+            <stringProp name="AMQPSampler.Password">guest</stringProp>
+            <stringProp name="AMQPSampler.SSL">false</stringProp>
+            <boolProp name="AMQPConsumer.Persistent">false</boolProp>
+            <boolProp name="AMQPConsumer.UseTx">false</boolProp>
+            <stringProp name="AMQPPublisher.MessageRoutingKey">RPCMessage.Request.v1_0</stringProp>
+            <stringProp name="AMQPPublisher.Message">{
+        &quot;RequestMessageText&quot;: &apos;${uniqueId}&apos;
+}</stringProp>
+            <stringProp name="AMQPPublisher.MessageType">RPCMessageRequest</stringProp>
+            <stringProp name="AMQPPublisher.ReplyToQueue">jMeter_${__threadNum}_${replyToQueue}</stringProp>
+            <stringProp name="AMQPPublisher.CorrelationId">${uniqueId}</stringProp>
+            <elementProp name="AMQPPublisher.Headers" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+          </com.zeroclue.jmeter.protocol.amqp.AMQPPublisher>
+          <hashTree/>
+          <com.zeroclue.jmeter.protocol.amqp.AMQPConsumer guiclass="com.zeroclue.jmeter.protocol.amqp.gui.AMQPConsumerGui" testclass="com.zeroclue.jmeter.protocol.amqp.AMQPConsumer" testname="RPC Response" enabled="true">
+            <stringProp name="AMQPSampler.Exchange">my_rpc_exchange</stringProp>
+            <boolProp name="AMQPSampler.ExchangeDurable">false</boolProp>
+            <boolProp name="AMQPSampler.ExchangeRedeclare">false</boolProp>
+            <stringProp name="AMQPSampler.Queue">jMeter_${__threadNum}_${replyToQueue}</stringProp>
+            <stringProp name="AMQPSampler.RoutingKey">RPCMessage.Request.v1_0</stringProp>
+            <stringProp name="AMQPSampler.VirtualHost">/</stringProp>
+            <stringProp name="AMQPSampler.MessageTTL"></stringProp>
+            <stringProp name="AMQPSampler.MessageExpires"></stringProp>
+            <stringProp name="AMQPSampler.ExchangeType">direct</stringProp>
+            <stringProp name="AMQPSampler.QueueDurable">false</stringProp>
+            <stringProp name="AMQPSampler.QueueExclusive">true</stringProp>
+            <stringProp name="AMQPSampler.QueueAutoDelete">true</stringProp>
+            <boolProp name="AMQPSampler.Redeclare">false</boolProp>
+            <stringProp name="AMQPSampler.Timeout">1000</stringProp>
+            <stringProp name="AMQPSampler.Iterations">1</stringProp>
+            <stringProp name="AMQPSampler.Host">localhost</stringProp>
+            <stringProp name="AMQPSampler.Port">5672</stringProp>
+            <stringProp name="AMQPSampler.Username">guest</stringProp>
+            <stringProp name="AMQPSampler.Password">guest</stringProp>
+            <stringProp name="AMQPSampler.SSL">false</stringProp>
+            <boolProp name="AMQPConsumer.ReadResponse">false</boolProp>
+            <stringProp name="AMQPConsumer.PrefetchCount">0</stringProp>
+            <stringProp name="AMQPConsumer.ReceiveTimeout">10000</stringProp>
+            <stringProp name="AMQPConsumer.PurgeQueue">false</stringProp>
+            <stringProp name="AMQPConsumer.AutoAck">true</stringProp>
+          </com.zeroclue.jmeter.protocol.amqp.AMQPConsumer>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="GraphVisualizer" testclass="ResultCollector" testname="Graph Results" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Respones" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

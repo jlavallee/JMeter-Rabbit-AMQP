@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # jmeter-rabbitmq-setup.sh From https://github.com/wilsonmar/JMeter-Rabbit-AMQP
-# This script bootstraps a OSX laptop for development
+# This script bootstraps a OSX laptop for development.
+# Resources are created new each run (after deleting leftovers from previous run)
 # Steps here are explained in https://wilsonmar.github.io/jmeter-install/
 #    - xcode
 #    - homebrew, then via brew:
@@ -96,8 +97,6 @@ fi
    tree -L 1
 
 
-# cd ~/gits
-
 if ! command -v ant >/dev/null; then
   fancy_echo "Installing ant utlity ..."
   brew install ant
@@ -106,8 +105,9 @@ else
   fancy_echo "ant already installed. Skipping install."
   ant -v
 fi
-  fancy_echo "ant running to process ant.xml ..."
+  fancy_echo "ant run to process ant.xml ..."
   ant
+  # Ant can pick up the Test.jmx file, execute it, and generate an easily-readable HTML report.
 
 
 FILE="target/dist/JMeterAMQP.jar"
@@ -127,7 +127,7 @@ fi
 
 
 
-  fancy_echo "ivy running in ivy folder ..."
+  fancy_echo "ivy java program running in ivy folder ..."
   pwd
   java -jar ivy/ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
       -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
@@ -158,7 +158,8 @@ fi
 pause 'Press [Enter] key to continue...'
 
    fancy_echo "Starting JMeter in background to run test ..."
-#   nohup "./jmeter.sh -n -t $REPO1/bin/GamesSubscriber.jmx -l result.jtl" > /dev/null 2>&1 &
-
+   # chmod +x jmeter.sh
+#   nohup "./jmeter.sh -n -t $REPO1/examples/rabbitmq_test.jmx -l result.jtl" > /dev/null 2>&1 &
+# -n for NON-GUI mode jmeter -n -t [jmx file] -l [results file] -e -o [Path to output folder]
 
 fancy_echo "Done."
