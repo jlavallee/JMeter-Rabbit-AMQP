@@ -48,12 +48,12 @@ fi
 
 
 if ! command -v java >/dev/null; then
-  fancy_echo "Installing JDK ..."
+  fancy_echo "Installing Java JDK ..."
    brew cask info java8
    brew cask install java8
    javac -version  
 else
-  fancy_echo "JDK already installed. Skipping install."
+  fancy_echo "Java JDK already installed. Skipping install."
    javac -version  
 fi
 
@@ -64,8 +64,10 @@ if ! command -v jmeter >/dev/null; then
    export JMETER_HOME="/usr/local/Cellar/jmeter/3.3"
    echo $JMETER_HOME
    ls $JMETER_HOME
+else
   fancy_echo "jmeter already installed. Skipping install."
 fi
+   jmeter -v
 
 
 REPO1="JMeter-Rabbit-AMQP"
@@ -76,7 +78,7 @@ if [ -d $REPO1 ]; then
 else
   fancy_echo "$REPO1 folder does not exist ..."
 fi
-  fancy_echo "$REPO1 repo being cloned ..."
+  echo "$REPO1 repo being cloned ..."
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
    cd $REPO1
    tree
@@ -139,15 +141,15 @@ else
   fancy_echo "Add path of rabbitmq /usr/local/sbin ..."
    export PATH=$PATH:/usr/local/sbin
 fi
-fancy_echo "Starting Rabbitmq server in background using nohup ..."
+  fancy_echo "Starting Rabbitmq server in background using nohup ..."
    nohup rabbitmq-server &>/dev/null &
    jobs
    ps
-   open http://localhost:15672  
+   open http://localhost:15672  # default port.
 
 
-fancy_echo "Starting JMeter in background to run test..."
-    jmeter -v
+   fancy_echo "Starting JMeter in background to run test ..."
+#   nohup "./jmeter.sh -n -t $REPO1/bin/GamesSubscriber.jmx -l result.jtl" > /dev/null 2>&1 &
 
 
 fancy_echo "Done."
