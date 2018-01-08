@@ -60,11 +60,10 @@ fi
 
 export JMETER_HOME="/usr/local/Cellar/jmeter/3.3"
 if [ -d $JMETER_HOME ]; then
-if ! command -v jmeter >/dev/null; then
+  fancy_echo "$JMETER_HOME already installed. Skipping install."
+else
   fancy_echo "Installing jmeter to $JMETER_HOME ..."
   brew install jmeter
-else
-  fancy_echo "$JMETER_HOME already installed. Skipping install."
 fi
    ls $JMETER_HOME
    # jmeter -v  # with that big ASCII art banner.
