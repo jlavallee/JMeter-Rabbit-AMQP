@@ -16,7 +16,7 @@ fancy_echo() {
   printf "\n>>> $fmt\n" "$@"
 }
 
-fancy_echo "Boostrapping ..."
+fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
 
 #trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 #et -e
@@ -31,7 +31,7 @@ if ! command -v cc >/dev/null; then
   fancy_echo "Installing xcode. It's needed by Homebrew ..."
   xcode-select --install 
 else
-  fancy_echo "Xcode already installed. Skipping."
+  fancy_echo "Xcode already installed. Skipping install."
 fi
 sw_vers
 
@@ -40,7 +40,7 @@ if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew for brew commands ..."
   ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" </dev/null
 else
-  fancy_echo "Homebrew already installed. Skipping."
+  fancy_echo "Homebrew already installed. Skipping install."
   brew --version  # Homebrew 1.4.2
 fi
 
@@ -51,7 +51,7 @@ if ! command -v java >/dev/null; then
    brew cask install java8
    javac -version  
 else
-  fancy_echo "JDK already installed. Skipping."
+  fancy_echo "JDK already installed. Skipping install."
    javac -version  
 fi
 
@@ -62,7 +62,7 @@ if ! command -v jmeter >/dev/null; then
    export JMETER_HOME="/usr/local/Cellar/jmeter/3.3"
    echo $JMETER_HOME
    ls $JMETER_HOME
-  fancy_echo "jmeter already installed. Skipping."
+  fancy_echo "jmeter already installed. Skipping install."
 fi
 
 
@@ -81,7 +81,7 @@ if ! command -v tree >/dev/null; then
   fancy_echo "Installing tree utlity ..."
   brew install tree
 else
-  fancy_echo "tree already installed. Skipping."
+  fancy_echo "tree already installed. Skipping install."
 fi
   fancy_echo "Tree ...."
   cd $FILE
@@ -95,7 +95,7 @@ if ! command -v ant >/dev/null; then
   fancy_echo "Installing ant utlity ..."
   brew install ant
 else
-  fancy_echo "ant already installed. Skipping."
+  fancy_echo "ant already installed. Skipping install."
 fi
   fancy_echo "ant running..."
   ant
@@ -122,23 +122,24 @@ if ! command -v rabbitmq-server >/dev/null; then
   fancy_echo "Installing rabbitmq-server locally as server under test ..."
   brew install rabbitmq
 else
-  fancy_echo "rabbitmq-server already installed. Skipping."
+  fancy_echo "rabbitmq-server already installed. Skipping install."
 fi
 
 
 if [[ ":$PATH:" == *":$HOME/usr/local/sbin:"* ]]; then
-  fancy_echo "rabbitmq in path already. Skipping."
+  fancy_echo "rabbitmq in path already. Skipping install."
 else
   fancy_echo "Add path of rabbitmq ..."
    export PATH=$PATH:/usr/local/sbin
 fi
-fancy_echo "Starting Rabbitmq server ..."
-   rabbitmq-server
+fancy_echo "Starting Rabbitmq server in background using nohup ..."
+   nohup rabbitmq-server &>/dev/null &
+   jobs
+   open http://localhost:15672  
 
 
 #fancy_echo "Starting JMeter..."
 #    jmeter ???
 
-# watch run at http://localhost:15672
 
 fancy_echo "Done."
