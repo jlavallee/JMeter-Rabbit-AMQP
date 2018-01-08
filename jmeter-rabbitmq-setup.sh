@@ -78,19 +78,18 @@ fi
    # jmeter -v  # with that big ASCII art banner.
 
 
-FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
-FOLDER="$JMETER_HOME/libexec/lib/ext"
-if [ -f $FOLDER/$FILE ]; then  # file exists within folder 
-   fancy_echo "$FILE already installed in $FOLDER. Skipping install."
+REPO1="JMeter-Rabbit-AMQP"
+if [ -d $REPO1 ]; then
+  fancy_echo "Repo $REPO1 folder exists, so deleting..."
+  rm -rf $REPO1
 else
-   fancy_echo "Downloading $FILE to $FOLDER ..."
-   # From https://jmeter-plugins.org/wiki/StandardSet/
-   curl -O http://jmeter-plugins.org/downloads/file/$FILE
-
-   fancy_echo "Moving $FILE to $FOLDER ..."
-   cp $FILE  $FOLDER -i
+  fancy_echo "Repo $REPO1 folder does not exist ..."
 fi
-
+  fancy_echo "Repo $REPO1 being cloned ..."
+   git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
+   cd $REPO1
+   pwd
+   #tree
 
 
 if ! command -v tree >/dev/null; then
