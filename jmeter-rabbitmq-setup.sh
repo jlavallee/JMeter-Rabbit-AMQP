@@ -15,8 +15,8 @@ fancy_echo() {
   printf "\n>>> $fmt\n" "$@"
 }
 
-trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
-set -e
+#trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+#set -e
 
 fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
 #  clear
@@ -36,7 +36,7 @@ else
   fancy_echo "Xcode already installed. Skipping install."
 fi
   xcodebuild -version
-exit
+
 
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew for brew commands ..."
