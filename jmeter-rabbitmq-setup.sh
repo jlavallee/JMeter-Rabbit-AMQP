@@ -58,25 +58,25 @@ else
 fi
 
 
+export JMETER_HOME="/usr/local/Cellar/jmeter/3.3"
+if [ -d $JMETER_HOME ]; then
 if ! command -v jmeter >/dev/null; then
-  fancy_echo "Installing jmeter ..."
+  fancy_echo "Installing jmeter to $JMETER_HOME ..."
   brew install jmeter
-   export JMETER_HOME="/usr/local/Cellar/jmeter/3.3"
-   echo $JMETER_HOME
-   ls $JMETER_HOME
 else
-  fancy_echo "jmeter already installed. Skipping install."
+  fancy_echo "$JMETER_HOME already installed. Skipping install."
 fi
-   jmeter -v
+   ls $JMETER_HOME
+   # jmeter -v  # with that big ASCII art banner.
 
 
 REPO1="JMeter-Rabbit-AMQP"
 echo $REPO1
 if [ -d $REPO1 ]; then
-  fancy_echo "$REPO1 folder exists, so deleting..."
+  fancy_echo "$REPO1 repo folder exists, so deleting..."
   rm -rf $REPO1
 else
-  fancy_echo "$REPO1 folder does not exist ..."
+  fancy_echo "$REPO1 repo folder does not exist ..."
 fi
   echo "$REPO1 repo being cloned ..."
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
