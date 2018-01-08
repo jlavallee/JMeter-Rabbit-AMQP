@@ -120,11 +120,13 @@ else
    fancy_echo "File '$FILE' not found. Aborting..."
    exit
 fi
+
+
 pwd
 
 
   fancy_echo "ivy running..."
-   java -jar ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
+  java -jar ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
       -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
 
 if ! command -v rabbitmq-server >/dev/null; then
