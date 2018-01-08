@@ -74,17 +74,21 @@ fi
    # jmeter -v  # with that big ASCII art banner.
 
 
-FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed.
+FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FOLDER="$JMETER_HOME/libexec/lib/ext"
+echo $FOLDER/$FILE
 if [ -f $FOLDER/$FILE ]; then  # file exists within folder 
    fancy_echo "$FILE already installed in $FOLDER. Skipping install."
 else
    fancy_echo "Downloading and moving $FILE to $FOLDER ..."
    # From https://jmeter-plugins.org/wiki/StandardSet/
    curl -O http://jmeter-plugins.org/downloads/file/jmeter-plugins-manager-0.18.jar
+
+   fancy_echo "Moving $FILE to $FOLDER ..."
    cp $FILE  $FOLDER  -i
 fi
 exit
+
 
 # TODO: Check if version has changed.
 #  fancy_echo "Installing plugin extras to $JMETER_HOME/libexec/lib/ext ..."
