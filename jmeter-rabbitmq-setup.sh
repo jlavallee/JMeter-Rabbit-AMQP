@@ -70,18 +70,17 @@ fi
 
 
 REPO1="JMeter-Rabbit-AMQP"
-echo $REPO1
 if [ -d $REPO1 ]; then
-  fancy_echo "$REPO1 repo folder exists, so deleting..."
+  fancy_echo "Repo $REPO1 folder exists, so deleting..."
   rm -rf $REPO1
 else
-  fancy_echo "$REPO1 repo folder does not exist ..."
+  fancy_echo "Repo $REPO1 folder does not exist ..."
 fi
-  echo "$REPO1 repo being cloned ..."
+  echo "Repo $REPO1 being cloned ..."
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
    cd $REPO1
    tree
-exit
+
 
 if ! command -v tree >/dev/null; then
   fancy_echo "Installing tree utlity ..."
