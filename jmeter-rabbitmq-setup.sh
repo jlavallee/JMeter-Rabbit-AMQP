@@ -74,6 +74,23 @@ fi
    # jmeter -v  # with that big ASCII art banner.
 
 
+FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed.
+FOLDER="$JMETER_HOME/libexec/lib/ext"
+if [ -f $FOLDER/$FILE ]; then  # file exists within folder 
+   fancy_echo "$FILE already installed in $FOLDER. Skipping install."
+else
+   fancy_echo "Downloading and moving $FILE to $FOLDER ..."
+   # From https://jmeter-plugins.org/wiki/StandardSet/
+   curl -O http://jmeter-plugins.org/downloads/file/jmeter-plugins-manager-0.18.jar
+   cp $FILE  $FOLDER  -i
+fi
+exit
+
+# TODO: Check if version has changed.
+#  fancy_echo "Installing plugin extras to $JMETER_HOME/libexec/lib/ext ..."
+# curl -O http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.2.1.zip
+
+
 REPO1="JMeter-Rabbit-AMQP"
 if [ -d $REPO1 ]; then
   fancy_echo "Repo $REPO1 folder exists, so deleting..."
@@ -154,12 +171,17 @@ fi
    jobs
    ps 
 
-   #open http://localhost:15672  # default port (open is Mac only command)
-pause 'Press [Enter] key to continue...'
+   #open http://localhost:15672  # 5672 default port (open is Mac only command)
+#pause 'Press [Enter] key to continue...'
 
-   fancy_echo "Starting JMeter in background to run test ..."
+export JMETER_FILE="rabbitmq_test_run"
+   fancy_echo "Starting JMeter in background for $JMETER_FILE ..."
    # chmod +x jmeter.sh
+   $JMETER_HOME/libexec/bin/jmeter.sh -n -t $REPO1/examples/$JMETER_FILE.jmx -l JMETER_FILE_log.jtl
 #   nohup "./jmeter.sh -n -t $REPO1/examples/rabbitmq_test.jmx -l result.jtl" > /dev/null 2>&1 &
 # -n for NON-GUI mode jmeter -n -t [jmx file] -l [results file] -e -o [Path to output folder]
+
+   fancy_echo "Process $JMETER_FILE_log.jtl ..."
+   subl $JMETER_FILE_log.jtl
 
 fancy_echo "Done."
