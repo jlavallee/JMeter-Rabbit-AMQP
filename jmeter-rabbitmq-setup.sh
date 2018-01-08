@@ -108,9 +108,12 @@ fi
 
 FILE="target/dist/JMeterAMQP.jar"
 if [ -f $FILE ]; then  # file exists within folder $REPO1
-  fancy_echo "Deleting previous and copying from $FILE ..."
+  fancy_echo "$FILE was created ..."
+   ls -al    $FILE                        | grep JMeterAMQP.jar
+  fancy_echo "Removing previous within JMETER_HOME ..."
    ls -al    $JMETER_HOME/libexec/lib/ext | grep JMeterAMQP.jar
    rm        $JMETER_HOME/libexec/lib/ext/JMeterAMQP.jar
+  fancy_echo "Copying in from $FILE ..."
    cp $FILE  $JMETER_HOME/libexec/lib/ext
    ls $JMETER_HOME/libexec/lib/ext -al
 else
