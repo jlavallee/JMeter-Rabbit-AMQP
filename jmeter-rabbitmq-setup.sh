@@ -81,10 +81,10 @@ if [ -f $FOLDER/$FILE ]; then  # file exists within folder
 else
    fancy_echo "Downloading $FILE to $FOLDER ..."
    # From https://jmeter-plugins.org/wiki/StandardSet/
-   curl -O http://jmeter-plugins.org/downloads/file/jmeter-plugins-manager-0.18.jar
+   curl -O http://jmeter-plugins.org/downloads/file/$FILE
 
    fancy_echo "Moving $FILE to $FOLDER ..."
-   cp $FILE  $FOLDER  -i
+   cp $FILE  $FOLDER -i
 fi
 
 
