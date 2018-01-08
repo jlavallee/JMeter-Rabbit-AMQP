@@ -33,6 +33,8 @@ if ! command -v cc >/dev/null; then
 else
   fancy_echo "Xcode already installed. Skipping."
 fi
+sw_vers
+
 
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew for brew commands ..."
@@ -41,6 +43,7 @@ else
   fancy_echo "Homebrew already installed. Skipping."
   brew --version  # Homebrew 1.4.2
 fi
+
 
 if ! command -v java >/dev/null; then
   fancy_echo "Installing JDK ..."
@@ -52,6 +55,7 @@ else
    javac -version  
 fi
 
+
 if ! command -v jmeter >/dev/null; then
   fancy_echo "Installing jmeter ..."
   brew install jmeter
@@ -60,6 +64,7 @@ if ! command -v jmeter >/dev/null; then
    ls $JMETER_HOME
   fancy_echo "jmeter already installed. Skipping."
 fi
+
 
 FILE="JMeter-Rabbit-AMQP"
 if [ -f $FILE ]; then
@@ -79,8 +84,10 @@ else
   fancy_echo "tree already installed. Skipping."
 fi
   fancy_echo "Tree ...."
+  cd $FILE
    pwd
    tree -L 1
+
 
 # cd ~/gits
 
@@ -92,6 +99,7 @@ else
 fi
   fancy_echo "ant running..."
   ant
+
 
 # If file exists:
 FILE="target/dist/JMeterAMQP.jar"
@@ -105,6 +113,7 @@ else
    exit
 fi
 
+
   fancy_echo "ivy running..."
    java -jar ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
       -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
@@ -116,6 +125,7 @@ else
   fancy_echo "rabbitmq-server already installed. Skipping."
 fi
 
+
 if [[ ":$PATH:" == *":$HOME/usr/local/sbin:"* ]]; then
   fancy_echo "rabbitmq in path already. Skipping."
 else
@@ -124,6 +134,7 @@ else
 fi
 fancy_echo "Starting Rabbitmq server ..."
    rabbitmq-server
+
 
 #fancy_echo "Starting JMeter..."
 #    jmeter ???
