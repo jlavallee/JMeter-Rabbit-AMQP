@@ -19,7 +19,7 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
-  clear
+#  clear
   sw_vers
 
 
@@ -68,17 +68,17 @@ if ! command -v jmeter >/dev/null; then
 fi
 
 
-FILE="JMeter-Rabbit-AMQP"
-echo $FILE
-if [ -f $FILE ]; then
-  fancy_echo "JMeter-Rabbit-AMQP folder exists, so deleting..."
-  rm -rf $FILE
+REPO1="JMeter-Rabbit-AMQP"
+echo $REPO1
+if [ -d $REPO1 ]; then
+  fancy_echo "$REPO1 folder exists, so deleting..."
+  rm -rf $REPO1
 else
-  fancy_echo "JMeter-Rabbit-AMQP folder does not exist ..."
+  fancy_echo "$REPO1 folder does not exist ..."
 fi
-  fancy_echo "JMeter-Rabbit-AMQP repo being cloned ..."
+  fancy_echo "$REPO1 repo being cloned ..."
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
-   cd JMeter-Rabbit-AMQPelse
+   cd $REPO1
    tree
 exit
 
