@@ -125,8 +125,8 @@ fi
 pwd
 
 
-  fancy_echo "ivy running..."
-  java -jar ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
+  fancy_echo "ivy running in ivy folder ..."
+  java -jar ivy/ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
       -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
 
 if ! command -v rabbitmq-server >/dev/null; then
