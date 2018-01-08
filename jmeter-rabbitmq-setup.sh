@@ -36,7 +36,7 @@ else
   fancy_echo "Xcode already installed. Skipping install."
 fi
   xcodebuild -version
-
+exit
 
 if ! command -v brew >/dev/null; then
   fancy_echo "Installing Homebrew for brew commands ..."
