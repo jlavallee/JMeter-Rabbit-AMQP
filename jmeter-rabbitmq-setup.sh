@@ -20,8 +20,8 @@ function pause(){
 }
 
 
-trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
-set -e
+# trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
+# set -e
 
 fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
 #  clear
