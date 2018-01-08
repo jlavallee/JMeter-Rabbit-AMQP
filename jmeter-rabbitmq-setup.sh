@@ -122,12 +122,12 @@ else
 fi
 
 
-pwd
-
 
   fancy_echo "ivy running in ivy folder ..."
+  pwd
   java -jar ivy/ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
       -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
+
 
 if ! command -v rabbitmq-server >/dev/null; then
   fancy_echo "Installing rabbitmq-server locally as server under test ..."
