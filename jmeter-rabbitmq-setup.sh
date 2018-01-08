@@ -89,8 +89,8 @@ if ! command -v tree >/dev/null; then
 else
   fancy_echo "tree already installed. Skipping install."
 fi
-  fancy_echo "Tree ...."
-  cd $FILE
+  fancy_echo "Tree of $REPO1 ...."
+  cd $REPO1
    pwd
    tree -L 1
 
