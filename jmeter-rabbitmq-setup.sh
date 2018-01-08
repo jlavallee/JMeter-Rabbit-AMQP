@@ -155,7 +155,7 @@ fi
    ps 
 
    #open http://localhost:15672  # default port (open is Mac only command)
-   # pause 'Press [Enter] key to continue...'
+pause 'Press [Enter] key to continue...'
 
    fancy_echo "Starting JMeter in background to run test ..."
 #   nohup "./jmeter.sh -n -t $REPO1/bin/GamesSubscriber.jmx -l result.jtl" > /dev/null 2>&1 &
