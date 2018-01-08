@@ -84,13 +84,11 @@ fi
 
 
 if ! command -v tree >/dev/null; then
-  fancy_echo "Installing tree utlity ..."
+  fancy_echo "Installing tree utility missing in MacOS ..."
   brew install tree
 else
   fancy_echo "tree already installed. Skipping install."
 fi
-  fancy_echo "Tree of $REPO1 ...."
-  cd $REPO1
    pwd
    tree -L 1
 
