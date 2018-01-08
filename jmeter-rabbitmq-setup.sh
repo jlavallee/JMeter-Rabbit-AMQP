@@ -79,7 +79,8 @@ fi
   echo "Repo $REPO1 being cloned ..."
    git clone https://github.com/wilsonmar/JMeter-Rabbit-AMQP --depth=1
    cd $REPO1
-   tree
+   pwd
+   #tree
 
 
 if ! command -v tree >/dev/null; then
