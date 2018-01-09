@@ -103,11 +103,10 @@ fi
    pwd
    tree -L 1
 
-# DEBUGGING:
 
 
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/jmeter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FILE="meter-plugins-manager-0.18.jar"
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"  # TODO: Check if version has changed since Jan 4, 2018.
 if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
@@ -115,24 +114,26 @@ else
    fancy_echo "Downloading $FILE to $FOLDER ..."
    # From https://jmeter-plugins.org/wiki/StandardSet/
    curl -O http://jmeter-plugins.org/downloads/file/$FILE
-
-   fancy_echo "Moving $FILE to $FILE_PATH ..."
+   ls -al    $FILE
+   fancy_echo "Overwriting $FILE_PATH ..."
    yes | cp -rf $FILE  $FILE_PATH 
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 fi
 
 
 FILE="JMeterPlugins-Extras-1.2.1.zip"  # TODO: Check if version has changed since Jan 4, 2018.
-FOLDER="$JMETER_HOME/libexec/lib/ext"
-if [[ -f "$FOLDER/$FILE" ]]; then  # file exists within folder 
-   fancy_echo "$FILE already installed in $FOLDER. Skipping install."
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"
+if [ -f $FILE_PATH ]; then  # file exists within folder 
+   fancy_echo "$FILE already installed. Skipping install."
+   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 else
    fancy_echo "Downloading $FILE to $FOLDER ..."
    # From https://jmeter-plugins.org/wiki/Extras
    curl -O http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.2.1.zip
-
-   fancy_echo "Moving $FILE to $FOLDER ..."
-   cp $FILE  $FOLDER  -i
+   ls -al    $FILE
+   fancy_echo "Overwriting $FILE_PATH ..."
+   yes | cp -rf $FILE  $FILE_PATH 
+   ls -al    $FILE_PATH
 fi
 
 
