@@ -19,21 +19,11 @@ function pause(){
    read -p "$*"
 }
 
-
 trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 BEGIN=`date +%s`
 
-PLATFORM='unknown'
-UNAMESTR=$(uname)  # instead of older `uname`
-if [[ "$unamestr" == 'Darwin' ]]; then
-   PLATFORM='macos'
-else [[ "$unamestr" == 'Linux' ]]; then
-   PLATFORM='linux'  # Ubuntu, etc.
-elif [[ "$unamestr" == 'FreeBSD' ]]; then
-   PLATFORM='freebsd'
-fi
 fancy_echo "Starting jmeter-rabbitmq-setup.sh on $PLATFORM / $OSTYPE ................................."
 #  clear
   sw_vers
@@ -201,6 +191,7 @@ export JMETER_FILE="rabbitmq_test"
 
    fancy_echo "Process rabbitmq_test.jtl ..."
 #   subl rabbitmq_test.jtl
+# https://blogs.perficient.com/delivery/blog/2015/04/08/generate-performance-testing-report-with-jmeter-plugins-and-ant/
 
 
 END=`date +%s`
