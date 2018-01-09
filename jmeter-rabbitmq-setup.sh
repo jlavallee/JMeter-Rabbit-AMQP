@@ -104,18 +104,18 @@ fi
    tree -L 1
 
 
-FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
-FOLDER="$JMETER_HOME/libexec/lib/ext"
-if [ -f "$JMETER_HOME/libexec/lib/ext/$FILE" ]; then  # file exists within folder 
-   fancy_echo "$FILE already installed in $FOLDER. Skipping install."
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
+FILE="meter-plugins-manager-0.18.jar"
+if [ -f $FILE_PATH ]; then  # file exists within folder 
+   fancy_echo "$FILE already installed. Skipping install."
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 else
    fancy_echo "Downloading $FILE to $FOLDER ..."
    # From https://jmeter-plugins.org/wiki/StandardSet/
    curl -O http://jmeter-plugins.org/downloads/file/$FILE
 
-   fancy_echo "Moving $FILE to $FOLDER ..."
-   cp $FILE  $FOLDER -i
+   fancy_echo "Moving $FILE to $FILE_PATH ..."
+   cp $FILE  $FILE_PATH -i
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 fi
 
