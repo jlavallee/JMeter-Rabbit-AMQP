@@ -119,7 +119,7 @@ else
    yes | cp -rf $FILE  $FILE_PATH 
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 fi
-NOTE: JMeterPlugins-Extras-1.4.0.zip now incorporated into Packages.
+# NOTE: JMeterPlugins-Extras-1.4.0.zip now incorporated into Packages.
 
 
 if ! command -v ant >/dev/null; then
