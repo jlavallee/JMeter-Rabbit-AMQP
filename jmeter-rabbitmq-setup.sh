@@ -119,7 +119,6 @@ else
    yes | cp -rf $FILE  $FILE_PATH 
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 fi
-# NOTE: JMeterPlugins-Extras-1.4.0.zip now incorporated into Packages.
 
 
 if ! command -v ant >/dev/null; then
@@ -133,6 +132,21 @@ fi
   fancy_echo "ant run to process ant.xml ..."
   ant
   # Ant can pick up the Test.jmx file, execute it, and generate an easily-readable HTML report.
+
+
+
+  fancy_echo "ivy java program running in ivy folder ..."
+  # NOTE: JMeterPlugins-Extras-1.4.0.zip now incorporated into Packages.
+  java -jar ivy/ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
+      -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
+FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
+if [ -f $FILE ]; then  # file exists within folder $REPO1
+   fancy_echo "$FILE found. Continuing ..."
+   ls -al FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
+else
+   fancy_echo "$FILE not found. Aborting..."
+   exit
+fi
 
 
 FILE="target/dist/JMeterAMQP.jar"
@@ -152,18 +166,23 @@ fi
 
 
 
-  fancy_echo "ivy java program running in ivy folder ..."
-  pwd
-  java -jar ivy/ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
-      -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
-FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
-if [ -f $FILE ]; then  # file exists within folder $REPO1
-   fancy_echo "$FILE found. Continuing ..."
-   ls -al FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
+
+FILE="JMeterPlugins-Extras-1.4.0"  # TODO: Check if version has changed since Jan 4, 2018.
+   # From https://jmeter-plugins.org/downloads/old/
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE.zip"
+if [ -f $FILE_PATH.zip ]; then  # file exists within folder 
+   fancy_echo "$FILE already installed. Skipping install."
+   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE.zip
 else
-   fancy_echo "$FILE not found. Aborting..."
-   exit
+   fancy_echo "Downloading $FILE to $FOLDER ..."
+   curl -O http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.4.0.zip
+   unzip $FILE.zip
+   ls -al    $FILE
+   fancy_echo "Overwriting $FILE_PATH ..."
+   yes | cp -rf $FILE  $FILE_PATH 
+   ls -al    $FILE_PATH
 fi
+
 
 
 if ! command -v rabbitmq-server >/dev/null; then
@@ -172,12 +191,6 @@ if ! command -v rabbitmq-server >/dev/null; then
 else
   fancy_echo "rabbitmq-server already installed. Skipping install."
 fi
-
-
-  fancy_echo "TODO: Configure rabbitmq exchanges ..."
-
-
-
 
 if [[ ":$PATH:" == *":$HOME/usr/local/sbin:"* ]]; then
   fancy_echo "rabbitmq in path. Continuing ..."
@@ -193,8 +206,14 @@ fi
    jobs
    ps 
 
+
+  fancy_echo "TODO: Using rabbitmq API to configure exchanges..."
+# https://pulse.mozilla.org/api/
+
    #open http://localhost:15672  # 5672 default port (open is Mac only command)
 #pause 'Press [Enter] key to continue...'
+curl -i -u guest:guest http://localhost:15672/api/vhosts
+
 
 export JMETER_FILE="rabbitmq_test"
    fancy_echo "Starting JMeter in background for $JMETER_FILE ..."
