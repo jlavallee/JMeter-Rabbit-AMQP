@@ -198,15 +198,15 @@ fi
    #open http://localhost:15672  # 5672 default port (open is Mac only command)
 #pause 'Press [Enter] key to continue...'
 
-export JMETER_FILE="rabbitmq_test_run"
+export JMETER_FILE="rabbitmq_test"
    fancy_echo "Starting JMeter in background for $JMETER_FILE ..."
    # chmod +x jmeter.sh
-   $JMETER_HOME/libexec/bin/jmeter.sh -n -t $REPO1/examples/$JMETER_FILE.jmx -l JMETER_FILE_log.jtl
+   $JMETER_HOME/libexec/bin/jmeter.sh -n -t $REPO1/examples/rabitmq_test.jmx -l rabitmq_test.jtl
 #   nohup "./jmeter.sh -n -t $REPO1/examples/rabbitmq_test.jmx -l result.jtl" > /dev/null 2>&1 &
 # -n for NON-GUI mode jmeter -n -t [jmx file] -l [results file] -e -o [Path to output folder]
 
-   fancy_echo "Process $JMETER_FILE_log.jtl ..."
-   subl $JMETER_FILE_log.jtl
+   fancy_echo "Process rabitmq_test.jtl ..."
+   subl rabitmq_test.jtl
 
 
 END=`date +%s`
