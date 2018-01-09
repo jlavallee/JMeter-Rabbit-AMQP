@@ -121,6 +121,35 @@ else
 fi
 
 
+FILE="JMeterPlugins-Extras"  # TODO: Check if version has changed since Jan 4, 2018.
+   # From https://jmeter-plugins.org/downloads/old/
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE.zip"
+if [ -f $FILE_PATH.zip ]; then  # file exists within folder 
+   fancy_echo "$FILE already installed. Skipping install."
+   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE.zip
+else
+   fancy_echo "Downloading $FILE to $FOLDER ..."
+   # See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-extras
+   curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-extras/1.4.0/jmeter-plugins-extras-1.4.0.jar
+   # 408K 
+   fancy_echo "Overwriting $FILE_PATH ..."
+   yes | cp -rf $FILE  $FILE_PATH 
+   ls -al    $FILE_PATH
+fi
+
+
+# FILE="JMeterPlugins-Standard" version 1.4 from Apr 2016 is latest
+# See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-standard
+# curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-standard/1.4.0/jmeter-plugins-standard-1.4.0.jar
+# into $JMETER_HOME/libexec/lib/ext/
+
+
+# FILE="JMeterPlugins-ExtrasLibs" version 1.4 from Apr 2016 is latest
+# See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-extras-libs
+# curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-extras-libs/1.4.0/jmeter-plugins-extras-libs-1.4.0.jar
+# into $JMETER_HOME/libexec/lib/ext/
+
+
 if ! command -v ant >/dev/null; then
   fancy_echo "Installing ant utlity ..."
   brew install ant
@@ -152,24 +181,6 @@ else
    exit
 fi
 
-
-
-
-FILE="JMeterPlugins-Extras-1.4.0"  # TODO: Check if version has changed since Jan 4, 2018.
-   # From https://jmeter-plugins.org/downloads/old/
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE.zip"
-if [ -f $FILE_PATH.zip ]; then  # file exists within folder 
-   fancy_echo "$FILE already installed. Skipping install."
-   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE.zip
-else
-   fancy_echo "Downloading $FILE to $FOLDER ..."
-   curl -O http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.4.0.zip
-   unzip $FILE.zip
-   ls -al    $FILE
-   fancy_echo "Overwriting $FILE_PATH ..."
-   yes | cp -rf $FILE  $FILE_PATH 
-   ls -al    $FILE_PATH
-fi
 
 
 
