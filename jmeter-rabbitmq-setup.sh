@@ -103,6 +103,7 @@ fi
    pwd
    tree -L 1
 
+# DEBUGGING:
 
 FILE_PATH="$JMETER_HOME/libexec/lib/ext/meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FILE="meter-plugins-manager-0.18.jar"
@@ -115,7 +116,7 @@ else
    curl -O http://jmeter-plugins.org/downloads/file/$FILE
 
    fancy_echo "Moving $FILE to $FILE_PATH ..."
-   cp $FILE  $FILE_PATH -i
+   yes | cp -rf $FILE  $FILE_PATH 
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 fi
 
