@@ -24,7 +24,7 @@ set -e
 
 BEGIN=`date +%s`
 
-fancy_echo "Starting jmeter-rabbitmq-setup.sh on $PLATFORM / $OSTYPE ................................."
+fancy_echo "Starting jmeter-rabbitmq-setup.sh on $OSTYPE ................................."
 #  clear
   sw_vers
     # ProductName:	Mac OS X
@@ -166,12 +166,16 @@ else
 fi
 
 
+
 if [[ ":$PATH:" == *":$HOME/usr/local/sbin:"* ]]; then
   fancy_echo "rabbitmq in path already. Skipping install."
 else
   fancy_echo "Add path of rabbitmq /usr/local/sbin ..."
    export PATH=$PATH:/usr/local/sbin
 fi
+
+
+## TODO: Configure RabbitMQ Exchanges etc.
 
 
   fancy_echo "Starting Rabbitmq server in background using nohup ..."
