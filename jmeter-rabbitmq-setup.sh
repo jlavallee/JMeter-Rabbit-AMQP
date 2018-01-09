@@ -98,6 +98,7 @@ if ! command -v tree >/dev/null; then
 else
   fancy_echo "tree already installed. Skipping install."
 fi
+   pwd
    tree -L 1
 
 
