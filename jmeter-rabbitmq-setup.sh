@@ -24,7 +24,7 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 BEGIN=`date +%s`
-fancy_echo "Starting jmeter-rabbitmq-setup.sh at $BEGIN ................................."
+fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
 #  clear
   sw_vers
     # ProductName:	Mac OS X
@@ -102,9 +102,6 @@ fi
    pwd
    tree -L 1
 
-END=`date +%s`
-RUNTIME=$((END-BEGIN))
-echo $RUNTIME
 
 FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FOLDER="$JMETER_HOME/libexec/lib/ext"
@@ -122,7 +119,7 @@ fi
 
 FILE="JMeterPlugins-Extras-1.2.1.zip"  # TODO: Check if version has changed since Jan 4, 2018.
 FOLDER="$JMETER_HOME/libexec/lib/ext"
-if [ -f "$FOLDER/$FILE" ]; then  # file exists within folder 
+if [[ -f "$FOLDER/$FILE" ]]; then  # file exists within folder 
    fancy_echo "$FILE already installed in $FOLDER. Skipping install."
 else
    fancy_echo "Downloading $FILE to $FOLDER ..."
@@ -205,4 +202,7 @@ export JMETER_FILE="rabbitmq_test_run"
    fancy_echo "Process $JMETER_FILE_log.jtl ..."
    subl $JMETER_FILE_log.jtl
 
-fancy_echo "Done."
+
+END=`date +%s`
+RUNTIME=$((END-BEGIN))
+fancy_echo "Done in $RUNTIME seconds."
