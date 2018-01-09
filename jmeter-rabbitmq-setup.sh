@@ -101,6 +101,35 @@ fi
    tree -L 1
 
 
+FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
+FOLDER="$JMETER_HOME/libexec/lib/ext"
+if [ -f "$FOLDER/$FILE" ]; then  # file exists within folder 
+   fancy_echo "$FILE already installed in $FOLDER. Skipping install."
+else
+   fancy_echo "Downloading $FILE to $FOLDER ..."
+   # From https://jmeter-plugins.org/wiki/StandardSet/
+   curl -O http://jmeter-plugins.org/downloads/file/$FILE
+
+   fancy_echo "Moving $FILE to $FOLDER ..."
+   cp $FILE  $FOLDER -i
+fi
+
+
+FILE="JMeterPlugins-Extras-1.2.1.zip"  # TODO: Check if version has changed since Jan 4, 2018.
+FOLDER="$JMETER_HOME/libexec/lib/ext"
+if [ -f "$FOLDER/$FILE" ]; then  # file exists within folder 
+   fancy_echo "$FILE already installed in $FOLDER. Skipping install."
+else
+   fancy_echo "Downloading $FILE to $FOLDER ..."
+   # From https://jmeter-plugins.org/wiki/Extras
+   curl -O http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.2.1.zip
+
+   fancy_echo "Moving $FILE to $FOLDER ..."
+   cp $FILE  $FOLDER  -i
+fi
+
+
+
 if ! command -v ant >/dev/null; then
   fancy_echo "Installing ant utlity ..."
   brew install ant
