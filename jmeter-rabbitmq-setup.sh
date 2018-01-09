@@ -65,7 +65,7 @@ else
   fancy_echo "Java JDK already installed. Skipping install."
    javac -version  
 fi
-
+   # javac 1.8.0_152
 
 export JMETER_HOME="/usr/local/Cellar/jmeter/3.3"
 if [ -d $JMETER_HOME ]; then
@@ -74,7 +74,7 @@ else
   fancy_echo "Installing jmeter to $JMETER_HOME ..."
   brew install jmeter
 fi
-   ls $JMETER_HOME
+   ls $JMETER_HOME/libexec
    # jmeter -v  # with that big ASCII art banner.
 
 
@@ -103,7 +103,7 @@ fi
 
 FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FOLDER="$JMETER_HOME/libexec/lib/ext"
-if [ -f "$FOLDER/$FILE" ]; then  # file exists within folder 
+if [[ -f "$FOLDER/$FILE" ]]; then  # file exists within folder 
    fancy_echo "$FILE already installed in $FOLDER. Skipping install."
 else
    fancy_echo "Downloading $FILE to $FOLDER ..."
