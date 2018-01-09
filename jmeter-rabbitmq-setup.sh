@@ -105,7 +105,8 @@ fi
 
 # DEBUGGING:
 
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
+
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/jmeter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FILE="meter-plugins-manager-0.18.jar"
 if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
