@@ -68,6 +68,7 @@ else
 fi
    # javac 1.8.0_152
 
+
 export JMETER_HOME="/usr/local/Cellar/jmeter/3.3"
 if [ -d $JMETER_HOME ]; then
   fancy_echo "$JMETER_HOME already installed. Skipping install."
@@ -105,8 +106,9 @@ fi
 
 FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FOLDER="$JMETER_HOME/libexec/lib/ext"
-if [[ -f "$FOLDER/$FILE" ]]; then  # file exists within folder 
+if [[ -f "$JMETER_HOME/libexec/lib/ext/$FILE" ]]; then  # file exists within folder 
    fancy_echo "$FILE already installed in $FOLDER. Skipping install."
+   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 else
    fancy_echo "Downloading $FILE to $FOLDER ..."
    # From https://jmeter-plugins.org/wiki/StandardSet/
