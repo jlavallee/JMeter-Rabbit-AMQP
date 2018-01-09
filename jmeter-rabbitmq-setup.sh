@@ -23,7 +23,8 @@ function pause(){
 trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
-fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
+BEGIN=`date +%s`
+fancy_echo "Starting jmeter-rabbitmq-setup.sh at $BEGIN ................................."
 #  clear
   sw_vers
     # ProductName:	Mac OS X
@@ -101,6 +102,9 @@ fi
    pwd
    tree -L 1
 
+END=`date +%s`
+RUNTIME=$((END-BEGIN))
+echo $RUNTIME
 
 FILE="meter-plugins-manager-0.18.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 FOLDER="$JMETER_HOME/libexec/lib/ext"
