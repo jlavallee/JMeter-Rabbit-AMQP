@@ -202,7 +202,7 @@ export JMETER_FILE="rabbitmq_test"
    fancy_echo "Starting JMeter in background for $JMETER_FILE ..."
    pwd
    ls -al $REPO1/examples/rabbitmq_test.jmx 
-   $JMETER_HOME/libexec/bin/jmeter.sh -n -t $REPO1/examples/rabbitmq_test.jmx -l rabbitmq_test.jtl
+   $JMETER_HOME/libexec/bin/jmeter.sh -n -t examples/rabbitmq_test.jmx -l rabbitmq_test.jtl
 #   nohup "./jmeter.sh -n -t $REPO1/examples/rabbitmq_test.jmx -l result.jtl" > /dev/null 2>&1 &
 # -n for NON-GUI mode jmeter -n -t [jmx file] -l [results file] -e -o [Path to output folder]
 
