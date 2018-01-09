@@ -24,7 +24,17 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 BEGIN=`date +%s`
-fancy_echo "Starting jmeter-rabbitmq-setup.sh ................................."
+
+PLATFORM='unknown'
+UNAMESTR=$(uname)  # instead of older `uname`
+if [[ "$unamestr" == 'Darwin' ]]; then
+   PLATFORM='macos'
+else [[ "$unamestr" == 'Linux' ]]; then
+   PLATFORM='linux'  # Ubuntu, etc.
+elif [[ "$unamestr" == 'FreeBSD' ]]; then
+   PLATFORM='freebsd'
+fi
+fancy_echo "Starting jmeter-rabbitmq-setup.sh on $PLATFORM / $OSTYPE ................................."
 #  clear
   sw_vers
     # ProductName:	Mac OS X
@@ -119,23 +129,7 @@ else
    yes | cp -rf $FILE  $FILE_PATH 
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 fi
-
-
-FILE="JMeterPlugins-Extras-1.2.1.zip"  # TODO: Check if version has changed since Jan 4, 2018.
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"
-if [ -f $FILE_PATH ]; then  # file exists within folder 
-   fancy_echo "$FILE already installed. Skipping install."
-   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
-else
-   fancy_echo "Downloading $FILE to $FOLDER ..."
-   # From https://jmeter-plugins.org/wiki/Extras
-   curl -O http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.2.1.zip
-   ls -al    $FILE
-   fancy_echo "Overwriting $FILE_PATH ..."
-   yes | cp -rf $FILE  $FILE_PATH 
-   ls -al    $FILE_PATH
-fi
-
+NOTE: JMeterPlugins-Extras-1.4.0.zip now incorporated into Packages.
 
 
 if ! command -v ant >/dev/null; then
