@@ -105,7 +105,7 @@ fi
 
 
 
-FILE="meter-plugins-manager-0.18.jar"
+FILE="jmeter-plugins-manager-0.5.jar"
 FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"  # TODO: Check if version has changed since Jan 4, 2018.
 if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
@@ -156,6 +156,14 @@ fi
   pwd
   java -jar ivy/ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
       -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
+FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
+if [ -f $FILE ]; then  # file exists within folder $REPO1
+   fancy_echo "$FILE found. Continuing ..."
+   ls -al FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
+else
+   fancy_echo "$FILE not found. Aborting..."
+   exit
+fi
 
 
 if ! command -v rabbitmq-server >/dev/null; then
@@ -166,16 +174,18 @@ else
 fi
 
 
+  fancy_echo "TODO: Configure rabbitmq exchanges ..."
+
+
+
 
 if [[ ":$PATH:" == *":$HOME/usr/local/sbin:"* ]]; then
-  fancy_echo "rabbitmq in path already. Skipping install."
+  fancy_echo "rabbitmq in path. Continuing ..."
 else
   fancy_echo "Add path of rabbitmq /usr/local/sbin ..."
    export PATH=$PATH:/usr/local/sbin
 fi
 
-
-## TODO: Configure RabbitMQ Exchanges etc.
 
 
   fancy_echo "Starting Rabbitmq server in background using nohup ..."
@@ -193,9 +203,12 @@ export JMETER_FILE="rabbitmq_test"
 #   nohup "./jmeter.sh -n -t $REPO1/examples/rabbitmq_test.jmx -l result.jtl" > /dev/null 2>&1 &
 # -n for NON-GUI mode jmeter -n -t [jmx file] -l [results file] -e -o [Path to output folder]
 
-   fancy_echo "Process rabbitmq_test.jtl ..."
+#   fancy_echo "Process rabbitmq_test.jtl ..."
 #   subl rabbitmq_test.jtl
 # https://blogs.perficient.com/delivery/blog/2015/04/08/generate-performance-testing-report-with-jmeter-plugins-and-ant/
+
+
+#   fancy_echo "Display run results (comparing against previous runs) ..."
 
 
 END=`date +%s`
