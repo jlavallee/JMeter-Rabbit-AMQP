@@ -116,7 +116,7 @@ else
    curl -O http://jmeter-plugins.org/downloads/file/$FILE
    ls -al    $FILE
    fancy_echo "Overwriting $FILE_PATH ..."
-   yes | cp -rf $FILE  $FILE_PATH 
+   yes | mv -rf $FILE  $FILE_PATH 
    ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 fi
 
@@ -133,12 +133,10 @@ else
    curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-extras/1.4.0/jmeter-plugins-extras-1.4.0.jar
    # 400K received. 
    fancy_echo "Overwriting $FILE_PATH ..."
-   yes | cp -rf $FILE $FILE_PATH
+   yes | mv -rf $FILE $FILE_PATH
    ls -al             $FILE_PATH
 fi
 
-/usr/local/Cellar/jmeter/3.3/libexec/lib/ext
-/usr/local/Cellar/jmeter/3.3/libexec/lib/ext/JMeterPlugins-Extras-1.4.0.jar
 
 # FILE="JMeterPlugins-Standard" version 1.4 from Apr 2016 is latest
 # See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-standard
