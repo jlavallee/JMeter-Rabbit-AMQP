@@ -105,28 +105,27 @@ fi
 
 
 
-FILE="jmeter-plugins-manager-0.5.jar"
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"  # TODO: Check if version has changed since Jan 4, 2018.
+FILE="jmeter-plugins-manager-0.5.jar"  # TODO: Check if version has changed since Jan 4, 2018.
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/jmeter-plugins-manager.jar"
 if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
-   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
+   ls -al             $FILE_PATH
 else
    fancy_echo "Downloading $FILE to $FOLDER ..."
    # From https://jmeter-plugins.org/wiki/StandardSet/
    curl -O http://jmeter-plugins.org/downloads/file/$FILE
-   ls -al    $FILE
    fancy_echo "Overwriting $FILE_PATH ..."
    yes | mv -rf $FILE  $FILE_PATH 
-   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
+   ls -al             $FILE_PATH
 fi
 
 
 FILE="jmeter-plugins-extras-1.4.0.jar"  # TODO: Check if version has changed since Jan 4, 2018.
    # From https://jmeter-plugins.org/downloads/old/
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/jmeter-plugins-extras.jar"
 if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
-   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
+   ls -al             $FILE_PATH
 else
    fancy_echo "Downloading $FILE_PATH ..."
    # See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-extras
@@ -140,10 +139,10 @@ fi
 
 FILE="jmeter-plugins-standard-1.4.0.jar"  # TODO: Check if version has changed since Jan 4, 2018.
    # From https://jmeter-plugins.org/downloads/old/
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/jmeter-plugins-standard.jar"
 if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
-   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
+   ls -al             $FILE_PATH
 else
    fancy_echo "Downloading $FILE_PATH ..."
    # See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-standard
@@ -157,10 +156,10 @@ fi
 
 FILE="jmeter-plugins-extras-libs-1.4.0.jar"  # TODO: Check if version has changed since Jan 4, 2018.
    # From https://jmeter-plugins.org/downloads/old/
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/jmeter-plugins-extras-libs.jar"
 if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
-   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
+   ls -al             $FILE_PATH
 else
    fancy_echo "Downloading $FILE_PATH ..."
    # See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-extras-libs
