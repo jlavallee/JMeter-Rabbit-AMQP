@@ -132,7 +132,7 @@ else
    curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-extras/1.4.0/jmeter-plugins-extras-1.4.0.jar
    # 400K received. 
    fancy_echo "Overwriting $FILE_PATH ..."
-   yes | mv -rf $FILE $FILE_PATH
+   yes | cp -rf $FILE $FILE_PATH
    ls -al             $FILE_PATH
 fi
 
@@ -150,7 +150,7 @@ else
    curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-standard/1.4.0/jmeter-plugins-standard-1.4.0.jar
    # 400K received. 
    fancy_echo "Overwriting $FILE_PATH ..."
-   yes | mv -rf $FILE $FILE_PATH
+   yes | cp -rf $FILE $FILE_PATH
    ls -al             $FILE_PATH
 fi
 
@@ -167,7 +167,7 @@ else
    curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-extras-libs/1.4.0/jmeter-plugins-extras-libs-1.4.0.jar
    # 400K received. 
    fancy_echo "Overwriting $FILE_PATH ..."
-   yes | mv -rf $FILE $FILE_PATH
+   yes | cp -rf $FILE $FILE_PATH
    ls -al             $FILE_PATH
 fi
 
