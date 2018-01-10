@@ -131,8 +131,10 @@ else
    fancy_echo "Downloading $FILE_PATH ..."
    # See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-extras
    curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-extras/1.4.0/jmeter-plugins-extras-1.4.0.jar
-   # 408K 
+   # 285K 
    fancy_echo "Overwriting $FILE_PATH ..."
+   echo FILE=$FILE
+   echo FILE_PATH=$FILE_PATH
    yes | cp -rf $FILE $FILE_PATH
    ls -al             $FILE_PATH
 fi
