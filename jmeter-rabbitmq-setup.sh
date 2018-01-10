@@ -121,14 +121,14 @@ else
 fi
 
 
-FILE="JMeterPlugins-Extras"  # TODO: Check if version has changed since Jan 4, 2018.
+FILE="JMeterPlugins-Extras-1.4.0.jar"  # TODO: Check if version has changed since Jan 4, 2018.
    # From https://jmeter-plugins.org/downloads/old/
-FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE.jar"
-if [ -f $FILE_PATH.zip ]; then  # file exists within folder 
+FILE_PATH="$JMETER_HOME/libexec/lib/ext/$FILE"
+if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
-   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE.jar
+   ls -al    $JMETER_HOME/libexec/lib/ext | grep $FILE
 else
-   fancy_echo "Downloading $FILE_PATH.jar ..."
+   fancy_echo "Downloading $FILE_PATH ..."
    # See https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-extras
    curl -O http://central.maven.org/maven2/kg/apc/jmeter-plugins-extras/1.4.0/jmeter-plugins-extras-1.4.0.jar
    # 408K 
