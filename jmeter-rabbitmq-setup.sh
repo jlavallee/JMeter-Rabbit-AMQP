@@ -113,9 +113,9 @@ if [ -f $FILE_PATH ]; then  # file exists within folder
 else
    fancy_echo "Downloading $FILE to $FOLDER ..."
    # From https://jmeter-plugins.org/wiki/StandardSet/
-   curl -O http://jmeter-plugins.org/downloads/file/$FILE
+   curl -O http://jmeter-plugins.org/downloads/file/$FILE  # 994 received. 
    fancy_echo "Overwriting $FILE_PATH ..."
-   yes | mv -rf $FILE  $FILE_PATH 
+   yes | cp -rf $FILE  $FILE_PATH 
    ls -al             $FILE_PATH
 fi
 
@@ -139,6 +139,7 @@ fi
 
 FILE="jmeter-plugins-standard-1.4.0.jar"  # TODO: Check if version has changed since Jan 4, 2018.
    # From https://jmeter-plugins.org/downloads/old/
+   # From https://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-1.4.0.zip
 FILE_PATH="$JMETER_HOME/libexec/lib/ext/jmeter-plugins-standard.jar"
 if [ -f $FILE_PATH ]; then  # file exists within folder 
    fancy_echo "$FILE already installed. Skipping install."
