@@ -278,11 +278,10 @@ if [ -f $FILE ]; then  # file exists within folder $REPO1
    # Rename to .CSV for a spreadsheet program to open: # libreoffice --calc $FILE
    yes | cp -rf $JMETER_FILE.jtl  $JMETER_FILE.csv
    open $JMETER_FILE.csv -a "Microsoft Excel" 
-   # // or open rabbitmq_test.jtl -a "Microsoft Excel"
    # Example contents:
    # timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,Latency,IdleTime,Connect
    # 1516143497026,2,AMQP Publisher,200,OK,Thread Group 1-1,text,true,,11,0,1,1,0,0,0
-
+   rm $JMETER_FILE.csv
 else
    fancy_echo "JMeter output $FILE not found. Run failed ..."
    abort
