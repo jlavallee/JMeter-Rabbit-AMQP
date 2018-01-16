@@ -198,7 +198,9 @@ else
   # Download:
   java -jar ivy/ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
       -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
-  # found using command: find / -name abc.dmg
+
+  # found using command: 
+  find / -name amqp-client-3.6.1.jar 
   cp ~/.ivy2/cache/com.rabbitmq/amqp-client/jars/amqp-client-3.6.1.jar  $FILE_PATH
   ls -al $FILE_PATH
 fi
