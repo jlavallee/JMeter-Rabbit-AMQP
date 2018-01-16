@@ -261,7 +261,7 @@ fi
 
 export JMETER_FILE="rabbitmq_test"
    fancy_echo "Starting JMeter in background for $JMETER_FILE ..."
-   ls -al examples/rabbitmq_test.jmx 
+   ls -al examples/$JMETER_FILE.jmx 
    $JMETER_HOME/libexec/bin/jmeter.sh -n -t examples/rabbitmq_test.jmx -l rabbitmq_test.jtl
 #   nohup "./jmeter.sh -n -t $REPO1/examples/rabbitmq_test.jmx -l result.jtl" > /dev/null 2>&1 &
 # -n for NON-GUI mode jmeter -n -t [jmx file] -l [results file] -e -o [Path to output folder]
@@ -270,6 +270,15 @@ export JMETER_FILE="rabbitmq_test"
 #   subl rabbitmq_test.jtl
 # https://blogs.perficient.com/delivery/blog/2015/04/08/generate-performance-testing-report-with-jmeter-plugins-and-ant/
 
+
+FILE="$JMETER_FILE.jtl"  # created above by JMeter in the current folder (.gitignore'd)
+if [ -f $FILE_PATH ]; then  # file exists within folder $REPO1
+   fancy_echo "$FILE found. Continuing ..."
+   ls -al $FILE
+else
+   fancy_echo "JMeter output $FILE not found. Run failed ..."
+   abort
+fi
 
 #   fancy_echo "Display run results (comparing against previous runs) ..."
 
