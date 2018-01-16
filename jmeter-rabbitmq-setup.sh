@@ -191,7 +191,7 @@ FILE="amqp-client-3.6.1.jar"  # TODO: Check if version has changed since Jan 4, 
 FILE_PATH="$JMETER_HOME/libexec/lib/amqp-client-3.6.1.jar"  # TODO: Check if version has changed since Jan 4, 2018.
 if [ -f $FILE_PATH ]; then  # file exists within folder $REPO1
    fancy_echo "$FILE found. Continuing ..."
-   ls -al FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
+   ls -al $FILE_PATH
 else
    fancy_echo "Downloading $FILE_PATH ..."
   # NOTE: JMeterPlugins-Extras-1.4.0.zip now incorporated into Packages?
