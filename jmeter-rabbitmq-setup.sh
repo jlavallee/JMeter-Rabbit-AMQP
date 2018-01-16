@@ -23,7 +23,7 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 BEGIN=`date +%s`
-export filename="jmeter-rabbitmq-setup.sh"  # this Bash shell script file.
+export FILENAME="jmeter-rabbitmq-setup.sh"  # this Bash shell script file.
 fancy_echo "Starting $FILENAME on $OSTYPE ................................."
 #  clear
   sw_vers
@@ -92,7 +92,7 @@ fi
    cd $REPO1
    pwd
    #tree
-   echo "$(git log -1 --format="%ad" -- $filename) $filename"
+   echo "$(git log -1 --format="%ad" -- $FILENAME) $FILENAME"
 
 
 if ! command -v tree >/dev/null; then
