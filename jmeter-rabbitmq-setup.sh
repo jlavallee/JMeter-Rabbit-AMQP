@@ -272,9 +272,17 @@ export JMETER_FILE="rabbitmq_test"
 
 
 FILE="$JMETER_FILE.jtl"  # created above by JMeter in the current folder (.gitignore'd)
-if [ -f $FILE_PATH ]; then  # file exists within folder $REPO1
-   fancy_echo "$FILE found. Continuing ..."
+if [ -f $FILE ]; then  # file exists within folder $REPO1
+   fancy_echo "$FILE found. Displaying ..."
    ls -al $FILE
+   # Rename to .CSV for a spreadsheet program to open: # libreoffice --calc $FILE
+   yes | cp -rf $JMETER_FILE.jtl  $JMETER_FILE.csv
+   open $JMETER_FILE.csv -a "Microsoft Excel" 
+   # // or open rabbitmq_test.jtl -a "Microsoft Excel"
+   # Example contents:
+   # timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,Latency,IdleTime,Connect
+   # 1516143497026,2,AMQP Publisher,200,OK,Thread Group 1-1,text,true,,11,0,1,1,0,0,0
+
 else
    fancy_echo "JMeter output $FILE not found. Run failed ..."
    abort
