@@ -23,8 +23,8 @@ trap 'ret=$?; test $ret -ne 0 && printf "failed\n\n" >&2; exit $ret' EXIT
 set -e
 
 BEGIN=`date +%s`
-
-fancy_echo "Starting jmeter-rabbitmq-setup.sh on $OSTYPE ................................."
+export filename="jmeter-rabbitmq-setup.sh"  # this Bash shell script file.
+fancy_echo "Starting $FILENAME on $OSTYPE ................................."
 #  clear
   sw_vers
     # ProductName:	Mac OS X
@@ -92,6 +92,7 @@ fi
    cd $REPO1
    pwd
    #tree
+   echo "$(git log -1 --format="%ad" -- $filename) $filename"
 
 
 if ! command -v tree >/dev/null; then
