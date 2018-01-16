@@ -247,11 +247,12 @@ fi
    ps 
 
 
-  fancy_echo "TODO: Using rabbitmq API to configure exchanges..."
+# TODO: Copy in rebbitmq configuration file. << Praveen?
+#  fancy_echo "TODO: Alternative: Use rabbitmq API to configure exchanges..."
 # https://pulse.mozilla.org/api/
 
 
-pause( "Press [Enter] to continue." )
+#FIX: pause( "Press [Enter] to continue." )
 
    #open http://localhost:15672  # 5672 default port (open is Mac only command)
 #pause 'Press [Enter] key to continue...'
