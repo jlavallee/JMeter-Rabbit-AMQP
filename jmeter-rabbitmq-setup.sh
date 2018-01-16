@@ -186,7 +186,19 @@ fi
   # Ant can pick up the Test.jmx file, execute it, and generate an easily-readable HTML report.
 
 
-# FILE="$JMETER_HOME/lib/amqp-client.jar" found.
+  fancy_echo "ivy java program running in ivy folder ..."
+  # NOTE: JMeterPlugins-Extras-1.4.0.zip now incorporated into Packages?
+  # Download:
+  java -jar ivy/ivy.jar -dependency com.rabbitmq amqp-client 3.6.1 \
+      -retrieve "$JMETER_HOME/lab/[artifact](-[classifier]).[ext]"
+# FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
+if [ -f $FILE ]; then  # file exists within folder $REPO1
+   fancy_echo "$FILE found. Continuing ..."
+   ls -al FILE="$JMETER_HOME/lib/amqp-client-3.6.1.jar"
+else
+   fancy_echo "$FILE not downloaded correctly. Aborting..."
+   exit
+fi
 
 
 FILE="target/dist/JMeterAMQP.jar"
@@ -233,6 +245,7 @@ fi
 # https://pulse.mozilla.org/api/
 
 
+pause( "Press [Enter] to continue." )
 
    #open http://localhost:15672  # 5672 default port (open is Mac only command)
 #pause 'Press [Enter] key to continue...'
