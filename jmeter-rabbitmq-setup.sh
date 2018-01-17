@@ -273,8 +273,9 @@ export JMETER_FILE="rabbitmq_test"
 
 FILE="$JMETER_FILE.jtl"  # created above by JMeter in the current folder (.gitignore'd)
 if [ -f $FILE ]; then  # file exists within folder $REPO1
-   fancy_echo "$FILE found. Displaying ..."
+   fancy_echo "$FILE found. Copying .csv for display in Excel ..."
    ls -al $FILE
+   # TODO: Check if Microsoft Excel is installed:
    # Rename to .CSV for a spreadsheet program to open: # libreoffice --calc $FILE
    yes | cp -rf $JMETER_FILE.jtl  $JMETER_FILE.csv
    open $JMETER_FILE.csv -a "Microsoft Excel" 
@@ -287,7 +288,7 @@ else
    abort
 fi
 
-#   fancy_echo "Display run results (comparing against previous runs) ..."
+#   fancy_echo "TODO: Display run results (comparing against previous runs) ..."
 
 
 END=`date +%s`
