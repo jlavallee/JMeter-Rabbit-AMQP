@@ -247,9 +247,36 @@ fi
    ps 
 
 
+
 # TODO: Copy in rebbitmq configuration file. << Praveen?
 #  fancy_echo "TODO: Alternative: Use rabbitmq API to configure exchanges..."
 # https://pulse.mozilla.org/api/
+
+# sudo rabbitmqctl list_queues
+
+
+  fancy_echo "Add vHost..."
+curl -i -u guest:guest -H "content-type:application/json" \
+   -XPUT http://localhost:15672/api/vhosts/foo
+
+
+  fancy_echo "Create new exchange in the default virtual Rabbitmq host ..."
+curl -i -u guest:guest -H "content-type:application/json" \
+    -XPUT -d'{"type":"direct","durable":true}' \
+    http://localhost:15672/api/exchanges/%2f/my-new-exchange
+  # No return a body in response to a PUT or DELETE, unless it fails.
+
+
+exit
+
+# http://hints.macworld.com/article.php?story=20021202054815892
+# On Ubuntu:
+# https://askubuntu.com/questions/192050/how-to-run-sudo-command-with-no-password?noredirect=1&lq=1
+
+
+# Install Node Package amqplib to make RabbitMQ API calls:
+# https://www.rabbitmq.com/tutorials/tutorial-one-javascript.html
+# npm install amqplib
 
 
 #FIX: pause( "Press [Enter] to continue." )
