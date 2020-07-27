@@ -22,3 +22,8 @@ jobs:
         java-version: 1.8
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: jmeter-rabbit-amq-0.0.1-SNAPSHOT.jar
+        path: target
