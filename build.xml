@@ -65,7 +65,7 @@
   
   <target name="download-ivy" unless="skip.ivy.download" description="Download Ivy">
       <mkdir dir="${ivy.jar.dir}"/>
-      <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
+      <get src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
   </target>
 
   <target name="package" depends="compile"
