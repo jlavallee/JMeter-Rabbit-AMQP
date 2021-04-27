@@ -1,20 +1,16 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: pull-request
+name: pre-release
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
 
 jobs:
-  build:
+  build-and-prerelease:
     runs-on: ubuntu-latest
     steps:
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v0.9.7
-      with:
-        versionSpec: '5.6.8'
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
@@ -22,10 +18,25 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.7
+      with:
+        versionSpec: '5.6.8'
     - name: Determine Version
       id: gitversion
       uses: gittools/actions/gitversion/execute@v0.9.7
     - name: Maven Version set
       run: mvn versions:set -DnewVersion=${{ steps.gitversion.outputs.semVer }}
     - name: Build with Maven
+      id: maven-build
       run: mvn -B package --file pom.xml
+    - name: Create Pre Release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          LICENSE
+          target/*.jar
