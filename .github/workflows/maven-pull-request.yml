@@ -25,7 +25,5 @@ jobs:
     - name: Determine Version
       id: gitversion
       uses: gittools/actions/gitversion/execute@v0.9.7
-    - name: Maven Version set
-      run: mvn versions:set -DnewVersion=${{ steps.gitversion.outputs.semVer }}
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package -Drevision=${{ steps.gitversion.outputs.semVer }} --file pom.xml
