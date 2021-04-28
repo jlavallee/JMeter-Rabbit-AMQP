@@ -13,3 +13,4 @@ lib/
 /ivy/
 *.iml
 .idea
+.flattened-pom.xml
