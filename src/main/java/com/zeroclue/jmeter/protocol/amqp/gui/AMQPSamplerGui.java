@@ -1,13 +1,14 @@
 package com.zeroclue.jmeter.protocol.amqp.gui;
 
+import com.zeroclue.jmeter.protocol.amqp.AMQPPublisher;
 import com.zeroclue.jmeter.protocol.amqp.AMQPSampler;
 import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
 import org.apache.jorphan.gui.JLabeledChoice;
 import org.apache.jorphan.gui.JLabeledTextField;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +17,7 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
     private static final long serialVersionUID = 1L;
 
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(AMQPPublisher.class);
 
     protected JLabeledTextField exchange = new JLabeledTextField("Exchange");
     private final JCheckBox exchangeRedeclare = new JCheckBox("Redeclare?", AMQPSampler.DEFAULT_EXCHANGE_REDECLARE);
@@ -39,8 +40,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
     protected JLabeledTextField username = new JLabeledTextField("Username");
     protected JLabeledTextField password = new JLabeledTextField("Password");
     private final JCheckBox SSL = new JCheckBox("SSL?", false);
-
-    private final JLabeledTextField iterations = new JLabeledTextField("Number of samples to Aggregate");
 
 
 
@@ -71,7 +70,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         queueRedeclare.setSelected(sampler.getQueueRedeclare());
 
         timeout.setText(sampler.getTimeout());
-        iterations.setText(sampler.getIterations());
 
         host.setText(sampler.getHost());
         port.setText(sampler.getPort());
@@ -103,7 +101,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
 
 
         timeout.setText(AMQPSampler.DEFAULT_TIMEOUT_STRING);
-        iterations.setText(AMQPSampler.DEFAULT_ITERATIONS_STRING);
 
         host.setText("localhost");
         port.setText(AMQPSampler.DEFAULT_PORT_STRING);
@@ -137,7 +134,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         sampler.setQueueRedeclare(queueRedeclare.isSelected());
 
         sampler.setTimeout(timeout.getText());
-        sampler.setIterations(iterations.getText());
 
         sampler.setHost(host.getText());
         sampler.setPort(port.getText());
@@ -155,9 +151,6 @@ public abstract class AMQPSamplerGui extends AbstractSamplerGui {
         JPanel mainPanel = new VerticalPanel();
 
         mainPanel.add(makeCommonPanel());
-
-        iterations.setPreferredSize(new Dimension(50,25));
-        mainPanel.add(iterations);
 
         add(mainPanel);
 

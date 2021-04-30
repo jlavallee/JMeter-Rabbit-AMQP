@@ -1,4 +1,4 @@
-# JMeter-Rabbit-AMQP #
+# JMeter AMQP Plugin #
 
 ![License](https://img.shields.io/github/workflow/status/verhyppo/jmeter-AMQP-plugin/tagged-release?style=for-the-badge)
 ![Issues](https://img.shields.io/github/issues/verhyppo/jmeter-AMQP-plugin?style=for-the-badge)
@@ -8,7 +8,7 @@
 A [JMeter](http://jmeter.apache.org/) plugin to publish & consume messages from [RabbitMQ](http://www.rabbitmq.com/) or any [AMQP](http://www.amqp.org/) message broker.
 
 
-- [JMeter-Rabbit-AMQP](#jmeter-rabbit-amqp)
+- [JMeter AMQP Plugin](#jmeter-amqp-plugin)
   - [1.1. Installation](#11-installation)
   - [1.2. Build](#12-build)
   - [1.3. Contributing](#13-contributing)
