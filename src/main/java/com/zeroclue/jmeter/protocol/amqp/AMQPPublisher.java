@@ -8,14 +8,15 @@ import org.apache.jmeter.samplers.Entry;
 import org.apache.jmeter.samplers.Interruptible;
 import org.apache.jmeter.samplers.SampleResult;
 import org.apache.jmeter.testelement.property.TestElementProperty;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 /**
  * JMeter creates an instance of a sampler class for every occurrence of the
@@ -31,7 +32,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
     private static final long serialVersionUID = -8420658040465788497L;
 
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(AMQPPublisher.class);
 
     //++ These are JMX names, and must not be changed
     private final static String MESSAGE = "AMQPPublisher.Message";
@@ -262,7 +263,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
         return builder.build();
     }
 
-    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException {
+    protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
         boolean ret = super.initChannel();
         if (getUseTx()) {
             channel.txSelect();
