@@ -65,8 +65,17 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
     private transient Connection connection;
 
     protected AMQPSampler() {
-        factory = new ConnectionFactory();
-        factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
+        this.factory = new ConnectionFactory();
+        this.factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
+    }
+
+    /**
+     * constructor used for testing purposes
+     * @param factory connection factory
+     */
+    AMQPSampler(ConnectionFactory factory) {
+        this.factory = factory;
+        this.factory.setRequestedHeartbeat(DEFAULT_HEARTBEAT);
     }
 
     protected boolean initChannel() throws IOException, NoSuchAlgorithmException, KeyManagementException, TimeoutException {
@@ -88,6 +97,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
             if (queueConfigured) {
                 if (getQueueRedeclare()) {
                     deleteQueue();
+                    channel.queueDeclare(getQueue(), queueDurable(), queueExclusive(), queueAutoDelete(), null);
                 }
 
             }
@@ -95,6 +105,7 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
             if (!StringUtils.isBlank(getExchange())) { //Use a named exchange
                 if (getExchangeRedeclare()) {
                     deleteExchange();
+                    channel.exchangeDeclare(getExchange(), getExchangeType(), getExchangeDurable(), queueAutoDelete(), null);
                 }
 
                 if (queueConfigured) {
@@ -157,12 +168,13 @@ public abstract class AMQPSampler extends AbstractSampler implements ThreadListe
         return getPropertyAsString(ITERATIONS, DEFAULT_ITERATIONS_STRING);
     }
 
+    //fixme normalize iterations
     public void setIterations(String s) {
         setProperty(ITERATIONS, s);
     }
 
     public int getIterationsAsInt() {
-        return getPropertyAsInt(ITERATIONS);
+        return getPropertyAsInt(ITERATIONS, DEFAULT_ITERATIONS);
     }
 
     public String getExchange() {

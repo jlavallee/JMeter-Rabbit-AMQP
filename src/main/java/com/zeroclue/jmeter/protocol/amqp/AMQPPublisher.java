@@ -2,6 +2,7 @@ package com.zeroclue.jmeter.protocol.amqp;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.samplers.Entry;
@@ -12,8 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -22,10 +26,10 @@ import java.util.concurrent.TimeoutException;
  * JMeter creates an instance of a sampler class for every occurrence of the
  * element in every thread. [some additional copies may be created before the
  * test run starts]
- *
+ * <p>
  * Thus each sampler is guaranteed to be called by a single thread - there is no
  * need to synchronize access to instance variables.
- *
+ * <p>
  * However, access to class fields must be synchronized.
  */
 public class AMQPPublisher extends AMQPSampler implements Interruptible {
@@ -55,6 +59,16 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     public AMQPPublisher() {
         super();
     }
+
+    /**
+     * constructor for testing purposes
+     *
+     * @param factory connection factory
+     */
+    AMQPPublisher(ConnectionFactory factory) {
+        super(factory);
+    }
+
 
     /**
      * {@inheritDoc}
@@ -92,9 +106,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
                 // try to force jms semantics.
                 // but this does not work since RabbitMQ does not sync to disk if consumers are connected as
                 // seen by iostat -cd 1. TPS value remains at 0.
-
-                channel.basicPublish(getExchange(), getMessageRoutingKey(), messageProperties, messageBytes);
-
+                result.addSubResult(sample("Sample " + idx, messageProperties, messageBytes));
             }
 
             // commit the sample.
@@ -106,22 +118,39 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
              * Set up the sample result details
              */
             result.setSamplerData(data);
-            result.setResponseData(new String(messageBytes), null);
+            result.setResponseData(new String(messageBytes), StandardCharsets.UTF_8.displayName());
             result.setDataType(SampleResult.TEXT);
 
             result.setResponseCodeOK();
             result.setResponseMessage("OK");
-            result.setSuccessful(true);
+            result.setSampleCount(loop);
+            result.setSuccessful(Arrays.stream(result.getSubResults())
+                    .allMatch(SampleResult::isSuccessful));
         } catch (Exception ex) {
-            log.debug(ex.getMessage(), ex);
+            log.error("Exception during execution", ex);
             result.setResponseCode("000");
             result.setResponseMessage(ex.toString());
-        }
-        finally {
+        } finally {
             result.sampleEnd(); // End timimg
         }
 
         return result;
+    }
+
+    private SampleResult sample(String label, AMQP.BasicProperties messageProperties, byte[] messageBytes) {
+        SampleResult subSample = new SampleResult();
+        subSample.setSampleLabel(label);
+        subSample.sampleStart();
+        try {
+            log.info("publish: {}, {}", getExchange(), getMessageRoutingKey());
+            channel.basicPublish(getExchange(), getMessageRoutingKey(), messageProperties, messageBytes);
+            subSample.setSuccessful(true);
+            subSample.setSamplerData("Message idx published");
+        } catch (IOException ex) {
+            subSample.setSuccessful(false);
+            subSample.setSamplerData(ex.getMessage());
+        }
+        return subSample;
     }
 
 
@@ -174,13 +203,13 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     }
 
     public String getContentType() {
-    	return getPropertyAsString(CONTENT_TYPE);
+        return getPropertyAsString(CONTENT_TYPE);
     }
-    
+
     public void setContentType(String contentType) {
-    	setProperty(CONTENT_TYPE, contentType);
+        setProperty(CONTENT_TYPE, contentType);
     }
-    
+
     /**
      * @return the correlation identifier for the sample
      */
@@ -216,7 +245,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     }
 
     public void setPersistent(Boolean persistent) {
-       setProperty(PERSISTENT, persistent);
+        setProperty(PERSISTENT, persistent);
     }
 
     public Boolean getUseTx() {
@@ -224,7 +253,7 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     }
 
     public void setUseTx(Boolean tx) {
-       setProperty(USE_TX, tx);
+        setProperty(USE_TX, tx);
     }
 
     @Override
@@ -248,15 +277,15 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
 
         final int deliveryMode = getPersistent() ? 2 : 1;
         final String contentType = StringUtils.defaultIfEmpty(getContentType(), "text/plain");
-        
+
         builder.contentType(contentType)
-            .deliveryMode(deliveryMode)
-            .priority(0)
-            .correlationId(getCorrelationId())
-            .replyTo(getReplyToQueue())
-            .type(getMessageType())
-            .headers(prepareHeaders())
-            .build();
+                .deliveryMode(deliveryMode)
+                .priority(0)
+                .correlationId(getCorrelationId())
+                .replyTo(getReplyToQueue())
+                .type(getMessageType())
+                .headers(prepareHeaders())
+                .build();
         if (getMessageId() != null && !getMessageId().isEmpty()) {
             builder.messageId(getMessageId());
         }
@@ -272,11 +301,10 @@ public class AMQPPublisher extends AMQPSampler implements Interruptible {
     }
 
     private Map<String, Object> prepareHeaders() {
-        Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, String> source = getHeaders().getArgumentsAsMap();
-        for (Map.Entry<String, String> item : source.entrySet()) {
-            result.put(item.getKey(), item.getValue());
+        Arguments headers = getHeaders();
+        if (headers != null) {
+            return new HashMap<>(headers.getArgumentsAsMap());
         }
-        return result;
+        return Collections.emptyMap();
     }
 }

@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
     steps:
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v0.9.7
@@ -27,3 +29,5 @@ jobs:
       uses: gittools/actions/gitversion/execute@v0.9.7
     - name: Build with Maven
       run: mvn -B package -Drevision=${{ steps.gitversion.outputs.semVer }} --file pom.xml
+    - name: Codecov upload
+      run: bash <(curl -s https://codecov.io/bash)
